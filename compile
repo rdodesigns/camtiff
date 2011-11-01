@@ -6,7 +6,13 @@ PLATFORM="`uname`"
 if [ "$PLATFORM" = "Darwin" ]; then
   if [ ! -d "/opt/local" ]; then
     echo "Must have MacPorts installed in default location to compile."
+    exit 1;
   fi
+
+  if [ ! -f "/opt/local/include/tiffio.h" ]; then
+    sudo port install tiff
+  fi
+
 fi
 
 ## Comment out to compile release version.
