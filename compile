@@ -1,5 +1,9 @@
 #!/bin/sh
 
+## Comment out to compile release version.
+DEBUG='-DDEBUG'
+
+## Dynamic library version
 if [ "$1" = "lib" ]; then
   if [ -f latwuc.o ]; then rm latwuc.o
     fi
@@ -11,16 +15,21 @@ if [ "$1" = "lib" ]; then
     fi
 
   echo "Compiling dynamic library version."
-  export LD_LIBRARY_PATH=`pwd`
+  if [ -z "$LD_LIBRARY_PATH" ]; then
+    echo "execute 'export LD_LIBRARY_PATH=`pwd`'"
+  fi
 
   clang -c -fpic latwuc.c -Wall -Wextra -O3
   clang -shared -lc -o latwuc.so latwuc.o
-  clang -o tiff_write_dyn tiff_example.c -ldl -ltiff -L. -DDEBUG -DLIB -DDATE="\"`date`\"" -Wall -Wextra -O3
+  clang -o tiff_write_dyn tiff_example.c -ldl -ltiff -L. $DEBUG -DLIB \
+        -Wall -Wextra -O3
+
+# Include file version.
 else
   if [ -f tiff_write_static ]; then rm tiff_write_static
     fi
 
   echo "Compiling static verson."
-  clang -ltiff -Wall -Wextra -DDEBUG -DDATE="\"`date`\"" -O3 -otiff_write_static tiff_example.c latwuc.c
+  clang -otiff_write_static tiff_example.c latwuc.c -ltiff $DEBUG \
+        -Wall -Wextra -O3
 fi
-
