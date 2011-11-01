@@ -24,7 +24,7 @@
 #endif
 
 // Simplified try something and return error functions.
-#define TRYFUNC(e, msg)        \
+#define TRYFUNC(e, msg)    \
   { int retval;            \
     if ((retval = e)) {    \
       printf("%s\n", msg); \

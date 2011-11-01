@@ -30,7 +30,7 @@
 #endif
 
 // Simplified try something and return error functions.
-#define TRYFUNC(e, msg)        \
+#define TRYFUNC(e, msg)    \
   { int retval;            \
     if ((retval = e)) {    \
       printf("%s\n", msg); \
@@ -61,7 +61,7 @@ importFunc tiffWritePtr;
 
 int opendl()
 {
-  #if defined(LIB) && defined(__unix__)
+  #if defined(__unix__)
     lib = dlopen("latwuc.so", RTLD_LAZY);
     dlError = dlerror();
     TRYRETURN(dlError, "Could not load latwuc.so", 1)
@@ -70,7 +70,7 @@ int opendl()
     dlError = dlerror();
     TRYRETURN(dlError, "Could not load tiffWrite from dl.", 2)
 
-  #elif defined(LIB) && defined(__WIN32)
+  #elif defined(__WIN32)
     lib = LoadLibrary(TEXT("latwuc.dll"));
     TRYRETURN(lib == NULL, "Could not load latwuc.dll", 1)
 
