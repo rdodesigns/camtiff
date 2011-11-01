@@ -10,15 +10,18 @@
 #include <stdlib.h> // malloc
 #include <stdint.h> // uint16_t
 
+#if defined(WIN32) && !defined(__WIN32)
+#define __WIN32
+#elif defined (__APPLE__) && !defined(__unix__)
+#define __unix__
+#endif
+
 #ifdef __WIN32
   #include <windows.h>
 #endif
 
 #ifdef __unix__
   #include <dlfcn.h>  // dll
-#elif defined(__WIN32)
-#else
-  #error Cannot compile as dynamic library on non UNIX or Windows systems.
 #endif
 
 
