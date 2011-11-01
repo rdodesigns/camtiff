@@ -34,14 +34,10 @@
 
 // Windows corrections
 #if defined(__WIN32)
-#define WIN32_LEAN_AND_MEAN  
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
-
-// Autoclosing error function
-#define ERR(e, img) {printf("An error occured. Code %d\n", e); \
-                     TIFFClose(img); return e;}
 
 // Error Codes
 #define EWRITEDIR  1

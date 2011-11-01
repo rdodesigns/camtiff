@@ -31,6 +31,9 @@
 
 #include "latwuc.h"
 
+// Autoclosing error function
+#define ERR(e, img) {printf("An error occured. Code %d\n", e); \
+                     TIFFClose(img); return e;}
 
 #define RESINBITS 16
 #define RANGE     65536
