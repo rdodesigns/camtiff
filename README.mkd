@@ -25,7 +25,7 @@ to compile "tiff\_example\_include.c" and `./compile lib` to compile
 Mac
 ---
 
-For Mac, first make sure [MacPorts][http://www.macports.org/] is installed.
+For Mac, first make sure [MacPorts](http://www.macports.org/) is installed.
 Then run `./compile` to compile "tiff\_example\_include.c" and `./compile
 lib` to compile "tiff\_example\_dyn.c". This shell script will automatically
 install libTIFF from MacPorts if it is not already installed.
