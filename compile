@@ -1,0 +1,26 @@
+#!/bin/sh
+
+if [ "$1" = "lib" ]; then
+  if [ -f latwuc.o ]; then rm latwuc.o
+    fi
+
+  if [ -f latwuc.so ]; then rm latwuc.so
+    fi
+
+  if [ -f tiff_write_dyn ]; then rm tiff_write_dyn
+    fi
+
+  echo "Compiling dynamic library version."
+  export LD_LIBRARY_PATH=`pwd`
+
+  clang -c -fpic latwuc.c -Wall -Wextra
+  clang -shared -lc -o latwuc.so latwuc.o
+  clang -o tiff_write_dyn tiff_example.c -ldl -ltiff -L. -DDEBUG -DLIB -DDATE="\"`date`\"" -Wall -Wextra
+else
+  if [ -f tiff_write_static ]; then rm tiff_write_static
+    fi
+
+  echo "Compiling static verson."
+  clang -ltiff -Wall -Wextra -DDEBUG -DDATE="\"`date`\"" -otiff_write_static tiff_example.c latwuc.c
+fi
+
