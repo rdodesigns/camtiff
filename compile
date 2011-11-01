@@ -21,7 +21,7 @@ if [ "$1" = "lib" ]; then
 
   clang -c -fpic latwuc.c -Wall -Wextra -O3
   clang -shared -lc -o latwuc.so latwuc.o
-  clang -o tiff_write_dyn tiff_example.c -ldl -ltiff -L. $DEBUG -DLIB \
+  clang -o tiff_write_dyn tiff_example_dyn.c -ldl -ltiff -L. $DEBUG -DLIB \
         -Wall -Wextra -O3
 
 # Include file version.
@@ -30,6 +30,6 @@ else
     fi
 
   echo "Compiling static verson."
-  clang -otiff_write_static tiff_example.c latwuc.c -ltiff $DEBUG \
+  clang -otiff_write_static tiff_example_include.c latwuc.c -ltiff $DEBUG \
         -Wall -Wextra -O3
 fi

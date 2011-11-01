@@ -14,21 +14,7 @@
   #include <windows.h>
 #endif
 
-#ifdef LIB
-  #ifdef __unix__
-    #include <dlfcn.h>  // dll
-  #elif defined(__WIN32)
-  #else
-    #error Cannot compile as dynamic library on non UNIX or Windows systems.
-  #endif
-
-  #define DESC "Created with dynamic library"
-#else
-  #include "latwuc.h"
-
-  #define DESC "Created with compiled source"
-#endif
-
+#include "latwuc.h"
 
 // Conditional debug messages.
 #ifdef DEBUG
@@ -52,61 +38,9 @@
       return retcode;              \
     }
 
-
 // Used to calculate buffer
 #define RANGE     65536
 
-// Globals
-#ifdef __unix__
-int (*tiffWritePtr)();
-void *lib;
-const char *dlError;
-#elif defined(__WIN32)
-typedef int (*importFunc)();
-HISTANCE lib;
-importFunc tiffWritePtr;
-#endif
-
-int opendl()
-{
-  #if defined(LIB) && defined(__unix__)
-    lib = dlopen("latwuc.so", RTLD_LAZY);
-    dlError = dlerror();
-    TRYRETURN(dlError, "Could not load latwuc.so", 1)
-
-    tiffWritePtr = dlsym(lib, "tiffWrite");
-    dlError = dlerror();
-    TRYRETURN(dlError, "Could not load tiffWrite from dl.", 2)
-
-  #elif defined(LIB) && defined(__WIN32)
-    lib = LoadLibrary(TEXT("latwuc.dll"));
-    TRYRETURN(lib == NULL, "Could not load latwuc.dll", 1)
-
-    tiffWritePtr = (importFunc)GetProcAddress(lib, "tiffWrite");
-    TRYRETURN(tiffWritePtr == NULL, "Could not load tiffWrite from DLL.", 2)
-
-  #else
-    tiffWritePtr = tiffWrite;
-
-  #endif
-
-    return 0;
-}
-
-int closedl()
-{
-  #if defined(LIB) && defined(__unix__)
-    int retval;
-
-    retval = dlclose(lib);
-    dlError = dlerror();
-    TRYRETURN(dlError, "Could not close latwuc.so", 3)
-
-  #elif defined(LIB) && defined(__WIN32)
-    FreeLibrary(lib);
-  #endif
-    return 0;
-}
 
 /* Calculated line pattern inside array.
  * buffer is a left to right downward diagonal line on a different colour
@@ -144,11 +78,7 @@ int calculateImageArrays(int width, int height, int pages, uint16_t** buffer)
 }
 
 // Example on how to use the library
-#ifdef __WIN32
-int _tmain()
-#else
 int main()
-#endif
 {
   int width = 1024;
   int height = 768;
@@ -161,25 +91,22 @@ int main()
   char* make = "Camera Manufacturer";
   char* model = "Camera Model";
   char* software = "Software";
-  char* image_desc = DESC;
+  char* image_desc = "Created through include statements.";
 
   // Uses global tiffWritePtr, which either points to tiffWrite from a
   // linked file or from a dynamic library.
 
-  TRYFUNC(opendl(), "Could not use dynamic library.")
 
   TRYFUNC(calculateImageArrays(width, height, pages, &buffer),
-      "Could not calclate buffer.")
+          "Could not calclate buffer.")
   DEBUGP("Calculated buffer.")
 
-  TRYFUNC((*tiffWritePtr) (width, height, pages,
-                       artist, copyright, make, model,
-                       software, image_desc,
-                       output_path, buffer),
-      "Could not create tiff.")
+  TRYFUNC(tiffWrite(width, height, pages,
+                    artist, copyright, make, model,
+                    software, image_desc,
+                    output_path, buffer),
+          "Could not create tiff.")
   DEBUGP("Wrote TIFF.")
-
-  TRYFUNC(closedl(), "Could not close dynamic library.")
 
   return 0;
 }
