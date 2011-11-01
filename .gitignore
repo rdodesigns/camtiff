@@ -1,0 +1,8 @@
+*.so
+*.o
+*.dll
+*.a
+
+output.tif
+tiff_write_dyn
+tiff_write_static
