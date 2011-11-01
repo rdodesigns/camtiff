@@ -1,7 +1,9 @@
 #!/bin/sh
 
+PLATFORM="`uname`"
+
 ## MacPorts check
-if [ "`uname`" == "Darwin" ]; then
+if [ "$PLATFORM" = "Darwin" ]; then
   if [ ! -d "/opt/local" ]; then
     echo "Must have MacPorts installed in default location to compile."
   fi
@@ -23,12 +25,12 @@ if [ "$1" = "lib" ]; then
 
   echo "Compiling dynamic library version."
 
-  if [ "`uname`" == "Darwin" ]; then
+  if [ "$PLATFORM" = "Darwin" ]; then
     clang -c -fpic latwuc.c -Wall -Wextra -I/opt/local/include -O3
     clang -shared -lc -o latwuc.so latwuc.o -L/opt/local/lib -ltiff
     clang -o tiff_write_dyn tiff_example_dyn.c -ldl -ltiff \
           -L. -L/opt/local/lib $DEBUG -DLIB -Wall -Wextra -O3
-  elif [ "`uname`" == "Linux" ]; then
+  elif [ "$PLATFORM" = "Linux" ]; then
     clang -c -fpic latwuc.c -Wall -Wextra -O3
     clang -shared -lc -o latwuc.so latwuc.o
     clang -o tiff_write_dyn tiff_example_dyn.c -ldl -ltiff -L. \
@@ -46,10 +48,10 @@ else
 
   echo "Compiling static verson."
 
-  if [ "`uname`" == "Darwin" ]; then
+  if [ "$PLATFORM" = "Darwin" ]; then
     clang -otiff_write_static tiff_example_include.c latwuc.c -ltiff \
       -I/opt/local/include -L/opt/local/lib $DEBUG -Wall -Wextra -O3
-  elif [ "`uname`" == "Linux" ]; then
+  elif [ "$PLATFORM" = "Linux" ]; then
     clang -otiff_write_static tiff_example_include.c latwuc.c -ltiff $DEBUG \
       -Wall -Wextra -O3
   fi
