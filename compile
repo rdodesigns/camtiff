@@ -24,46 +24,42 @@ DEBUG='-DDEBUG'
 
 ## Dynamic library version
 if [ "$1" = "lib" ]; then
-  if [ -f latwuc.o ]; then rm latwuc.o
+  if [ -f bin/latwuc.o ]; then rm bin/latwuc.o
     fi
 
-  if [ -f latwuc.so ]; then rm latwuc.so
+  if [ -f bin/latwuc.so ]; then rm bin/latwuc.so
     fi
 
-  if [ -f tiff_write_dyn ]; then rm tiff_write_dyn
+  if [ -f bin/tiff_write_dyn ]; then rm bin/tiff_write_dyn
     fi
 
   echo "Compiling dynamic library version."
 
   if [ "$PLATFORM" = "Darwin" ]; then
-    clang -c -fpic -o bin/latwuc.o latwuc.c -Wall -Wextra \
+    clang -c -fpic -o bin/latwuc.o src/latwuc.c -Wall -Wextra \
       -I/opt/local/include -O3
     clang -shared -lc -o bin/latwuc.so bin/latwuc.o -L/opt/local/lib -ltiff
-    clang -o bin/tiff_write_dyn tiff_example_dyn.c -ldl -ltiff \
+    clang -o bin/tiff_write_dyn src/tiff_example_dyn.c -ldl -ltiff \
           -Lbin/ -L/opt/local/lib $DEBUG -DLIB -Wall -Wextra -O3
   elif [ "$PLATFORM" = "Linux" ]; then
-    clang -c -fpic -o bin/latwuc.o latwuc.c -Wall -Wextra -O3
+    clang -c -fpic -o bin/latwuc.o src/latwuc.c -Wall -Wextra -O3
     clang -shared -lc -o bin/latwuc.so bin/latwuc.o
-    clang -o bin/tiff_write_dyn tiff_example_dyn.c -ldl -ltiff -Lbin/ \
+    clang -o bin/tiff_write_dyn src/tiff_example_dyn.c -ldl -ltiff -Lbin/ \
       $DEBUG -DLIB -Wall -Wextra -O3
-  fi
-
-  if [ -z "$LD_LIBRARY_PATH" ]; then
-    echo "execute 'export LD_LIBRARY_PATH=`pwd`'"
   fi
 
 # Include file version.
 else
-  if [ -f tiff_write_static ]; then rm tiff_write_static
+  if [ -f bin/tiff_write_static ]; then rm bin/tiff_write_static
     fi
 
   echo "Compiling static verson."
 
   if [ "$PLATFORM" = "Darwin" ]; then
-    clang -obin/tiff_write_static tiff_example_include.c latwuc.c -ltiff \
-      -I/opt/local/include -L/opt/local/lib $DEBUG -Wall -Wextra -O3
+    clang -obin/tiff_write_static src/tiff_example_include.c src/latwuc.c \
+      -ltiff -I/opt/local/include -L/opt/local/lib $DEBUG -Wall -Wextra -O3
   elif [ "$PLATFORM" = "Linux" ]; then
-    clang -obin/tiff_write_static tiff_example_include.c latwuc.c -ltiff \
-      $DEBUG -Wall -Wextra -O3
+    clang -obin/tiff_write_static src/tiff_example_include.c src/latwuc.c \
+      -ltiff $DEBUG -Wall -Wextra -O3
   fi
 fi
