@@ -3,11 +3,11 @@ Cloning
 
 For contributors
 
-    git@github.com:LaserAnalytics/latwuc.git
+    git clone git@github.com:LaserAnalytics/latwuc.git
 
 For read-only
 
-    git://github.com/LaserAnalytics/latwuc.git
+    git clone git://github.com/LaserAnalytics/latwuc.git
 
 Compiling
 =========
