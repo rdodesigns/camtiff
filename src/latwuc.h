@@ -1,28 +1,26 @@
-/* latwuc.h - A TIFF image writing library for spectroscopic data.
- * This file is part of latwuc.
+/* latwuc.h - A TIFF image writing library for spectroscopic data.  This file
+ * is part of latwuc.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk>
- * Date: 28/10/11 21:00:27
+ * Created by Ryan Orendorff <ro265@cam.ac.uk> 28/10/11 21:00:27
  *
  * The Laser Analytics Tiff Writer University of Cambridge (LATWUC) is a
  * library designed to, given an input 16 bit 3D array and some additional
- * comments, produce a TIFF image stack. It is designed to work with a piece
- * of LabVIEW software within the Laser Analytics group codenamed Apollo, a
- * front end for acquiring spectroscopic images.
+ * comments, produce a TIFF image stack. It is designed to work with a piece of
+ * LabVIEW software within the Laser Analytics group codenamed Apollo, a front
+ * end for acquiring spectroscopic images.
  *
- * Copyright (GPL V3):
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (GPL V3): This program is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdint.h>
@@ -70,9 +68,9 @@ extern __declspec(dllexport)int tiffWrite(int width, int height, int pages,
 
 
 int writeSubFile(TIFF *image, int width, int height,
-                char* artist, char* copyright, char* make, char* model,
-                char* software, char* image_desc,
-                uint16_t* buffer);
+                 char* artist, char* copyright, char* make, char* model,
+                 char* software, char* image_desc,
+                 uint16_t* buffer);
 
 int tiffWrite(int width, int height, int pages,
               char* artist, char* copyright, char* make, char* model,
