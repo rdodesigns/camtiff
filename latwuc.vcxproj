@@ -34,10 +34,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin</OutDir>
+    <OutDir>$(SolutionDir)\bin\</OutDir>
     <IncludePath>.\libtiff-3.9.5\libtiff;$(IncludePath)</IncludePath>
     <LibraryPath>.\libtiff-3.9.5\libtiff;$(LibraryPath)</LibraryPath>
-    <IntDir>bin\$(Configuration)\</IntDir>
+    <IntDir>bin\win\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -49,7 +49,8 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>

@@ -34,7 +34,7 @@ Windows
 -------
 
 Use the provided [Microsoft Visual Studio 2010][VS2010Express] project files
-to open and compile latwuc.
+(_latwuc.vcxproj_) to open and compile latwuc.
 
 libTIFF 3.9.5, which is a required library, is included in the source, and
 the libtiff.dll file inside the libtiff directory was compiled on a Windows
