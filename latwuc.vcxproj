@@ -35,8 +35,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\bin</OutDir>
-    <IncludePath>C:\Documents and Settings\update\My Documents\Downloads\LaserAnalytics-latwuc-d361afe\LaserAnalytics-latwuc-d361afe\libtiff-3.9.5\libtiff;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Documents and Settings\update\My Documents\Downloads\LaserAnalytics-latwuc-d361afe\LaserAnalytics-latwuc-d361afe\libtiff-3.9.5\libtiff;$(LibraryPath)</LibraryPath>
+    <IncludePath>.\libtiff-3.9.5\libtiff;$(IncludePath)</IncludePath>
+    <LibraryPath>.\libtiff-3.9.5\libtiff;$(LibraryPath)</LibraryPath>
     <IntDir>bin\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -44,7 +44,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LATWUC_EXPORTS;/DLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LIB;WIN32;_DEBUG;_WINDOWS;_USRDLL;LATWUC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>/I.\libtiff-3.9.5\libtiff;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -60,7 +60,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LATWUC_EXPORTS;/DLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LIB;WIN32;NDEBUG;_WINDOWS;_USRDLL;LATWUC_EXPORTS;/DLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>/I.\libtiff-3.9.5\libtiff;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -75,10 +75,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="latwuc.c" />
+    <ClCompile Include="src/latwuc.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="latwuc.h" />
+    <ClInclude Include="src/latwuc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
