@@ -56,10 +56,12 @@ latwuc easier to read and debug.
 
 The relevant code parameters are here.
 
-    int tiffWrite(int width, int height, int pages,
-                  char* artist, char* copyright, char* make, char* model,
-                  char* software, char* image_desc,
-                  char* output_path, uint16_t* buffer);
+```C
+int tiffWrite(uint_least16_t width, uint_least16_t height, uint_least16_t pages,
+              char* artist, char* copyright, char* make, char* model,
+              char* software, char* image_desc,
+              char* output_path, uint16_t* buffer);
+```
 
 To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the 'Function
 prototype' window under the 'Parameters' tab), and that the dimensions of the
