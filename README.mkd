@@ -63,9 +63,10 @@ int tiffWrite(uint_least16_t width, uint_least16_t height, uint_least16_t pages,
               char* output_path, uint16_t* buffer);
 ```
 
-To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the 'Function
-prototype' window under the 'Parameters' tab), and that the dimensions of the
-buffer variable must be specified in the _Call Library Function Node_ VI.
+To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the
+_Function prototype_ window under the _Parameters_ tab), and that the
+dimensions of the buffer variable must be specified in the _Call Library
+Function Node_ VI.
 
 [libtiff_build]: http://www.remotesensing.org/libtiff/build.html#PC "Building the libTIFF Software Distribution"
 [LabVIEW_DLL]: https://decibel.ni.com/content/docs/DOC-1690 "Using Existing C Code or a DLL in LabVIEW"
