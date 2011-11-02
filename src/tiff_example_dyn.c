@@ -48,6 +48,8 @@
     }
 
 
+typedef unsigned int uint;
+
 // Used to calculate buffer
 #define RANGE     65536
 
@@ -104,9 +106,9 @@ int closedl()
  * buffer is a left to right downward diagonal line on a different colour
  * background, depending on page.
  */
-int calculateImageArrays(int width, int height, int pages, uint16_t** buffer)
+int calculateImageArrays(uint width, uint height, uint pages, uint16_t** buffer)
 {
-  int i, j, k;
+  unsigned int i, j, k;
   uint16_t value;
   uint16_t pixel_intensity;
   uint16_t *point;
@@ -138,9 +140,9 @@ int calculateImageArrays(int width, int height, int pages, uint16_t** buffer)
 // Example on how to use the library
 int main()
 {
-  int width = 1024;
-  int height = 768;
-  int pages = 4;
+  uint width = 1024;
+  uint height = 768;
+  uint pages = 4;
   uint16_t *buffer;
 
   char* output_path = "output.tif";

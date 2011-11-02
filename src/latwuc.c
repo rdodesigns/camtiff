@@ -38,7 +38,7 @@
 #define RESINBITS 16
 #define RANGE     65536
 
-int writeSubFile(TIFF *image, int width, int height,
+int writeSubFile(TIFF *image, uint_least16_t width, uint_least16_t height,
                  char* artist, char* copyright, char* make, char* model,
                  char* software, char* image_desc,
                  uint16_t* buffer)
@@ -133,7 +133,7 @@ int writeSubFile(TIFF *image, int width, int height,
 }
 
 
-int tiffWrite(int width, int height, int pages,
+int tiffWrite(uint_least16_t width, uint_least16_t height, uint_least16_t pages,
               char* artist, char* copyright, char* make, char* model,
               char* software, char* image_desc,
               char* output_path, uint16_t* buffer)
