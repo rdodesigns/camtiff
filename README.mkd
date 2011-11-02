@@ -19,16 +19,16 @@ For Linux, libTIFF must be an installed library that is in the normal
 library search path. This is left up to the user to determine how to
 install, as it may be done in many different ways (package managers,
 source). Once libTIFF is installed in a standard location, run `./compile`
-to compile "tiff\_example\_include.c" and `./compile lib` to compile
-"tiff\_example\_dyn.c".
+to compile _tiff\_example\_include.c_ and `./compile lib` to compile
+_tiff\_example\_dyn.c_.
 
 Mac
 ---
 
-For Mac, first make sure [MacPorts][MP] is installed.
-Then run `./compile` to compile "tiff\_example\_include.c" and `./compile
-lib` to compile "tiff\_example\_dyn.c". This shell script will automatically
-install libTIFF from MacPorts if it is not already installed.
+For Mac, first make sure [MacPorts][MP] is installed. Then run `./compile`
+to compile _tiff\_example\_include.c_ and `./compile lib` to compile
+_tiff\_example\_dyn.c_. This shell script will automatically install libTIFF
+from MacPorts if it is not already installed.
 
 Windows
 -------
@@ -65,7 +65,7 @@ int tiffWrite(uint_least16_t width, uint_least16_t height, uint_least16_t pages,
 
 To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the 'Function
 prototype' window under the 'Parameters' tab), and that the dimensions of the
-buffer variable must be specified in the 'Call Library Function Node' VI.
+buffer variable must be specified in the _Call Library Function Node_ VI.
 
 [libtiff_build]: http://www.remotesensing.org/libtiff/build.html#PC "Building the libTIFF Software Distribution"
 [LabVIEW_DLL]: https://decibel.ni.com/content/docs/DOC-1690 "Using Existing C Code or a DLL in LabVIEW"
