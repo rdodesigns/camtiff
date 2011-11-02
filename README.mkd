@@ -61,10 +61,9 @@ The relevant code parameters are here.
                   char* software, char* image_desc,
                   char* output_path, uint16_t* buffer);
 
-To note that LabVIEW typedefs `char\*` as `CStr` (this shows up in the
-'Function prototype' window under the 'Parameters' tab), and that the
-dimensions of the buffer variable must be specified in the 'Call Library
-Function Node' VI.
+To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the 'Function
+prototype' window under the 'Parameters' tab), and that the dimensions of the
+buffer variable must be specified in the 'Call Library Function Node' VI.
 
 [libtiff_build]: http://www.remotesensing.org/libtiff/build.html#PC "Building the libTIFF Software Distribution"
 [LabVIEW_DLL]: https://decibel.ni.com/content/docs/DOC-1690 "Using Existing C Code or a DLL in LabVIEW"
