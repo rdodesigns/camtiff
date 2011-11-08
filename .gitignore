@@ -2,5 +2,10 @@
 *.o
 *.dll
 *.a
+*.filters
+*.user
+*.sdf
+
 
 bin/*
+
