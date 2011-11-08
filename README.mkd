@@ -3,11 +3,11 @@ Cloning
 
 For contributors
 
-    git clone git@github.com:LaserAnalytics/latwuc.git
+    git clone git@github.com:LaserAnalytics/camtiff.git
 
 For read-only
 
-    git clone git://github.com/LaserAnalytics/latwuc.git
+    git clone git://github.com/LaserAnalytics/camtiff.git
 
 Compiling
 =========
@@ -34,12 +34,12 @@ Windows
 -------
 
 Use the provided [Microsoft Visual Studio 2010][VS2010Express] project files
-(_latwuc.vcxproj_) to open and compile latwuc.
+(_camtiff.vcxproj_) to open and compile camtiff.
 
 libTIFF 3.9.5, which is a required library, is included in the source, and
 the libtiff.dll file inside the libtiff directory was compiled on a Windows
 XP 32-bit system. As such, it may be possible to use the provided DLL to
-compile latwuc. However, if Visual Studio (VS) complains about libTIFF or
+compile camtiff. However, if Visual Studio (VS) complains about libTIFF or
 its DLL the instructions for compiling libTIFF on Windows can be found
 [here][libtiff_build]. Note that `nmake` may be most easily accessed through
 the VS2010 command prompt program, and that some components may fail to build
@@ -52,7 +52,7 @@ Using in LabVIEW
 See [this article][LabVIEW_DLL] (skipping to step 9) for how to use the
 created DLL. It is advisable to move the DLL to a system wide stable location
 and create a subVI to use the DLL, as this will make the program that uses
-latwuc easier to read and debug.
+camtiff easier to read and debug.
 
 The relevant code parameters are here.
 
