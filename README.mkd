@@ -34,7 +34,9 @@ Windows
 -------
 
 Use the provided [Microsoft Visual Studio 2010][VS2010Express] project files
-(_camtiff.vcxproj_) to open and compile camtiff.
+(_camtiff.sln_) to open and compile camtiff. Note that warning occur about
+overlapping namespaces if camtiff is compiled as the debug target. These
+warnings do not occur if camtiff is compiled as a release target.
 
 libTIFF 3.9.5, which is a required library, is included in the source, and
 the libtiff.dll file inside the libtiff directory was compiled on a Windows
