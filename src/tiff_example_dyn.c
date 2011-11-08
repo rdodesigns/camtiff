@@ -1,4 +1,4 @@
-/* tiff_example.c - Example of using latwuc
+/* tiff_example.c - Example of using camtiff
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 28/10/11 21:00:27
@@ -67,17 +67,17 @@ importFunc tiffWritePtr;
 int opendl()
 {
   #if defined(__unix__)
-    lib = dlopen("latwuc.so", RTLD_LAZY);
+    lib = dlopen("camtiff.so", RTLD_LAZY);
     dlError = dlerror();
-    TRYRETURN(dlError, "Could not load latwuc.so", 1)
+    TRYRETURN(dlError, "Could not load camtiff.so", 1)
 
     tiffWritePtr = dlsym(lib, "tiffWrite");
     dlError = dlerror();
     TRYRETURN(dlError, "Could not load tiffWrite from dl.", 2)
 
   #elif defined(__WIN32)
-    lib = LoadLibrary(TEXT("latwuc.dll"));
-    TRYRETURN(lib == NULL, "Could not load latwuc.dll", 1)
+    lib = LoadLibrary(TEXT("camtiff.dll"));
+    TRYRETURN(lib == NULL, "Could not load camtiff.dll", 1)
 
     tiffWritePtr = (importFunc)GetProcAddress(lib, "tiffWrite");
     TRYRETURN(tiffWritePtr == NULL, "Could not load tiffWrite from DLL.", 2)
@@ -94,7 +94,7 @@ int closedl()
 
     retval = dlclose(lib);
     dlError = dlerror();
-    TRYRETURN(dlError, "Could not close latwuc.so", 3)
+    TRYRETURN(dlError, "Could not close camtiff.so", 3)
 
   #elif defined(__WIN32)
     FreeLibrary(lib);

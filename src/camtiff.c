@@ -1,10 +1,10 @@
-/* latwuc.c - A TIFF image writing library for spectroscopic data.
- * This file is part of latwuc.
+/* camtiff.c - A TIFF image writing library for spectroscopic data.
+ * This file is part of camtiff.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 28/10/11 21:00:27
  *
- * The Laser Analytics Tiff Writer University of Cambridge (LATWUC) is a
+ * The Laser Analytics Tiff Writer University of Cambridge (camtiff) is a
  * library designed to, given an input 16 bit 3D array and some additional
  * comments, produce a TIFF image stack. It is designed to work with a piece
  * of LabVIEW software within the Laser Analytics group codenamed Apollo, a
@@ -29,7 +29,7 @@
 #include <time.h>   // strftime
 #include <tiffio.h> // libTIFF (preferably 3.9.5+)
 
-#include "latwuc.h"
+#include "camtiff.h"
 
 // Autoclosing error function
 #define ERR(e, img) {printf("An error occured. Code %d\n", e); \

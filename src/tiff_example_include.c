@@ -1,4 +1,4 @@
-/* tiff_example.c - Example of using latwuc
+/* tiff_example.c - Example of using camtiff
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 28/10/11 21:00:27
@@ -14,7 +14,7 @@
   #include <windows.h>
 #endif
 
-#include "latwuc.h"
+#include "camtiff.h"
 
 // Conditional debug messages.
 #ifdef DEBUG
