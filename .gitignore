@@ -5,6 +5,7 @@
 *.filters
 *.user
 *.sdf
+*.opensdf
 
 
 bin/*
