@@ -46,7 +46,7 @@ camtiff to run without the MSVCR100.dll installed.__ If you get an error when
 using camtiff that complains about msvcr100.dll not being installed or errors
 similar to
 
-    MSVCRT.lib(MSVCR100.dll) : error LNK2005: _malloc alreadt defined in LIBCMT.lib(malloc.obj)
+    MSVCRT.lib(MSVCR100.dll) : error LNK2005: _malloc already defined in LIBCMT.lib(malloc.obj)
 
 
 then recompile libtiff and make sure that the /MT option is used instead of
