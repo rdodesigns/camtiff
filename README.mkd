@@ -34,18 +34,37 @@ Windows
 -------
 
 Use the provided [Microsoft Visual Studio 2010][VS2010Express] project files
-(_camtiff.sln_) to open and compile camtiff. Note that warning occur about
-overlapping namespaces if camtiff is compiled as the debug target. These
+(_camtiff.sln_) to open and compile camtiff. Note that warnings about
+overlapping namespaces occur if camtiff is compiled as the debug target. These
 warnings do not occur if camtiff is compiled as a release target.
 
-libTIFF 3.9.5, which is a required library, is included in the source, and
-the libtiff.dll file inside the libtiff directory was compiled on a Windows
-XP 32-bit system. As such, it may be possible to use the provided DLL to
-compile camtiff. However, if Visual Studio (VS) complains about libTIFF or
-its DLL the instructions for compiling libTIFF on Windows can be found
-[here][libtiff_build]. Note that `nmake` may be most easily accessed through
-the VS2010 command prompt program, and that some components may fail to build
-but this is ok as long as the dll is produced.
+libTIFF 3.9.5, which is a required library, is included in the source, and can
+be compiled with the command `nmake /f Makefile.vc lib` inside the libtiff
+directory. __It is important to know that the nmake.opt included here has been
+modified to use the /MT linker option instead of /MD, which allows libtiff and
+camtiff to run without the MSVCR100.dll installed.__ If you get an error when
+using camtiff that complains about msvcr100.dll not being installed or errors
+similar to
+
+    MSVCRT.lib(MSVCR100.dll) : error LNK2005: _malloc already defined in LIBCMT.lib(malloc.obj)
+
+
+then recompile libtiff and make sure that the /MT option is used instead of
+/MD.
+
+For simplicity, a 32-bit version of libtiff.dll is included inside the
+libtiff directory.  It may be possible to use the provided DLL to compile
+camtiff, however if you have problems please recompile libtiff.
+
+The official instructions for compiling libTIFF on Windows can be found
+[here][libtiff_build], although the only part of the library that needs to be
+compiled is the dll itself, which can be done with `nmake /f Makefile.vc lib`.
+__Again,  make sure that the nmake.opt file uses the /MT linker option instead
+of /MD.__ 
+
+Note that `nmake` may be most easily accessed through the VS2010 command prompt
+program, and some errors may be produced if you compile the libtiff tools along
+with the libtiff library files.
 
 
 Using in LabVIEW
@@ -59,7 +78,7 @@ camtiff easier to read and debug.
 The relevant code parameters are here.
 
 ```C
-int tiffWrite(uint_least16_t width, uint_least16_t height, uint_least16_t pages,
+int tiffWrite(uint16_t width, uint16_t height, uint16_t pages,
               char* artist, char* copyright, char* make, char* model,
               char* software, char* image_desc,
               char* output_path, uint16_t* buffer);
