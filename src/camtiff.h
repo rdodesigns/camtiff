@@ -60,20 +60,20 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	return TRUE;
 }
 
-extern __declspec(dllexport)int tiffWrite(uint_least16_t width,
-                              uint_least16_t height, uint_least16_t pages,
+extern __declspec(dllexport)int tiffWrite(uint16_t width,
+                              uint16_t height, uint16_t pages,
                               char* artist, char* copyright, char* make,
                               char* model, char* software, char* image_desc,
                               char* output_path, uint16_t* buffer);
 #endif
 
 
-int writeSubFile(TIFF *image, uint_least16_t width, uint_least16_t height,
+int writeSubFile(TIFF *image, uint16_t width, uint16_t height,
                  char* artist, char* copyright, char* make, char* model,
                  char* software, char* image_desc,
                  uint16_t* buffer);
 
-int tiffWrite(uint_least16_t width, uint_least16_t height, uint_least16_t pages,
+int tiffWrite(uint16_t width, uint16_t height, uint16_t pages,
               char* artist, char* copyright, char* make, char* model,
               char* software, char* image_desc,
               char* output_path, uint16_t* buffer);
