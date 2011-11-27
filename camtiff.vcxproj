@@ -74,7 +74,7 @@
     <ClCompile>
       <PreprocessorDefinitions>LIB;WIN32;NDEBUG;_WINDOWS;_USRDLL;LATWUC_EXPORTS;/DLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>/I.\libtiff-3.9.5\libtiff;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
