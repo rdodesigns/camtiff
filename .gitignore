@@ -6,7 +6,8 @@
 *.user
 *.sdf
 *.opensdf
-
+*.tiff
+*.tif
 
 bin/*
 
