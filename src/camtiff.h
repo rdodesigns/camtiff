@@ -67,13 +67,42 @@ extern __declspec(dllexport)int tiffWrite(uint16_t width,
                               char* output_path, uint16_t* buffer);
 #endif
 
+struct stack {
+  uint32_t width;
+  uint32_t height;
+  uint32_t pages;
+  uint8_t pixel_bit_depth;
+  void* buffer;
+};
 
-int writeSubFile(TIFF *image, uint16_t width, uint16_t height,
-                 char* artist, char* copyright, char* make, char* model,
-                 char* software, char* image_desc,
-                 uint16_t* buffer);
+struct page {
+  uint32_t width;
+  uint32_t height;
+  uint8_t pixel_bit_depth;
+  void* buffer;
+};
 
-int tiffWrite(uint16_t width, uint16_t height, uint16_t pages,
+// TODO: Fill out metadata struct
+struct metadata {
+  char* artist;
+  char* copyright;
+  char* make;
+  char* model;
+  char* software;
+  char* image_desc;
+};
+
+// TODO: Fill out image struct
+struct image {
+  TIFF* tiff;
+  struct stack stack;
+  struct metadata meta;
+};
+
+int writeSubFile(TIFF *image, struct page page, struct metadata meta);
+
+int tiffWrite(uint32_t width, uint32_t height,
+              uint32_t pages, uint8_t pixel_bit_depth,
               char* artist, char* copyright, char* make, char* model,
               char* software, char* image_desc,
-              char* output_path, uint16_t* buffer);
+              char* output_path, void* buffer);

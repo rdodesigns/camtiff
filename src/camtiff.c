@@ -35,15 +35,17 @@
 #define ERR(e, img) {printf("An error occured. Code %d\n", e); \
                      TIFFClose(img); return e;}
 
-#define RESINBITS 16
-#define RANGE     65536
 
-int writeSubFile(TIFF *image, uint16_t width, uint16_t height,
-                 char* artist, char* copyright, char* make, char* model,
-                 char* software, char* image_desc,
-                 uint16_t* buffer)
+void* moveBufferPointer(void* buffer, uint32_t distance, uint8_t element_size)
+{
+  return (void *) (((char *) buffer)+(distance*element_size/8));
+}
+
+int writeSubFile(TIFF *image, struct page page, struct metadata meta)
 {
   int retval;
+  uint32_t i;
+  void* strip_buffer;
 
   // function called for each file, iterates to create pages.
   static int file_num = 0;
@@ -77,15 +79,14 @@ int writeSubFile(TIFF *image, uint16_t width, uint16_t height,
   file_num++;
 
   // We need to set some values for basic tags before we can add any data
-  TIFFSetField(image, TIFFTAG_IMAGEWIDTH, width);
-  TIFFSetField(image, TIFFTAG_IMAGELENGTH, height);
-  TIFFSetField(image, TIFFTAG_BITSPERSAMPLE, RESINBITS);
+  TIFFSetField(image, TIFFTAG_IMAGEWIDTH, page.width);
+  TIFFSetField(image, TIFFTAG_IMAGELENGTH, page.height);
+  TIFFSetField(image, TIFFTAG_BITSPERSAMPLE, page.pixel_bit_depth);
+  TIFFSetField(image, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
+  TIFFSetField(image, TIFFTAG_ROWSPERSTRIP, 1);
 
   // # components per pixel. RGB is 3, gray is 1.
   TIFFSetField(image, TIFFTAG_SAMPLESPERPIXEL, 1);
-
-  // Could also be done in tile mode
-  TIFFSetField(image, TIFFTAG_ROWSPERSTRIP, height);
 
   // LZW lossless compression
   TIFFSetField(image, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
@@ -101,26 +102,31 @@ int writeSubFile(TIFF *image, uint16_t width, uint16_t height,
   TIFFSetField(image, TIFFTAG_DATETIME, time_str);
 
   // Image metadata
-  TIFFSetField(image, TIFFTAG_ARTIST, artist);
-  TIFFSetField(image, TIFFTAG_COPYRIGHT, copyright);
+  TIFFSetField(image, TIFFTAG_ARTIST, meta.artist);
+  TIFFSetField(image, TIFFTAG_COPYRIGHT, meta.copyright);
   /*TIFFSetField(image, TIFFTAG_HOSTCOMPUTER, "Windows XP");*/
-  TIFFSetField(image, TIFFTAG_MAKE, make);
-  TIFFSetField(image, TIFFTAG_MODEL, model);
-  TIFFSetField(image, TIFFTAG_SOFTWARE, software);
-  TIFFSetField(image, TIFFTAG_IMAGEDESCRIPTION, image_desc);
+  TIFFSetField(image, TIFFTAG_MAKE, meta.make);
+  TIFFSetField(image, TIFFTAG_MODEL, meta.model);
+  TIFFSetField(image, TIFFTAG_SOFTWARE, meta.software);
+  TIFFSetField(image, TIFFTAG_IMAGEDESCRIPTION, meta.image_desc);
 
-  // Pixel density and units
+  // Pixel density and units. Set to std screen resolution size.
   TIFFSetField(image, TIFFTAG_XRESOLUTION, 72);
   TIFFSetField(image, TIFFTAG_YRESOLUTION, 72);
   TIFFSetField(image, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
 
   // Write the information to the file
   // -1 on error, (width*height)*(RESISBITS/8) on success
-  if ((retval = TIFFWriteEncodedStrip(image, 0,
-                                      buffer, (width*height)*(RESINBITS/8)))
-      == -1){
-    printf("Could not write strip to tiff.\n");
-    return retval;
+  for (i=0; i < page.height; i++) {
+    strip_buffer = moveBufferPointer(page.buffer,
+                                     i*page.width, page.pixel_bit_depth);
+    if ((retval = TIFFWriteEncodedStrip(image, i,
+                                        strip_buffer,
+                                        page.width*page.pixel_bit_depth/8))
+        == -1){
+      printf("Could not write strip to tiff.\n");
+      return retval;
+    }
   }
 
   // 1 on error, 0 on success
@@ -133,13 +139,28 @@ int writeSubFile(TIFF *image, uint16_t width, uint16_t height,
 }
 
 
-int tiffWrite(uint16_t width, uint16_t height, uint16_t pages,
+void setMetadata(struct metadata* data,
+                 char* artist, char* copyright, char* make, char* model,
+                 char* software, char* image_desc)
+{
+  data->artist = artist;
+  data->copyright = copyright;
+  data->make = make;
+  data->model = model;
+  data->software = software;
+  data->image_desc = image_desc;
+}
+
+int tiffWrite(uint32_t width, uint32_t height,
+              uint32_t pages, uint8_t pixel_bit_depth,
               char* artist, char* copyright, char* make, char* model,
               char* software, char* image_desc,
-              char* output_path, uint16_t* buffer)
+              char* output_path, void* buffer)
 {
   int retval;
-  int k;
+  uint32_t k;
+  struct page page;
+  struct metadata meta;
 
   TIFF *image;
   // Open the TIFF file
@@ -148,12 +169,17 @@ int tiffWrite(uint16_t width, uint16_t height, uint16_t pages,
     return ETIFFOPEN;
   }
 
+  page.width = width;
+  page.height = height;
+  page.pixel_bit_depth=pixel_bit_depth;
+  setMetadata(&meta, artist, copyright, make, model, software, image_desc);
+
+
   // Write pages from combined buffer
   for (k = 0; k < pages; k++){
-    if ((retval = writeSubFile(image, width, height,
-                               artist, copyright, make, model,
-                               software, image_desc,
-                               buffer + k*(width*height))))
+    page.buffer = moveBufferPointer(buffer,
+                                    k*width*height, page.pixel_bit_depth);
+    if ((retval = writeSubFile(image, page, meta)))
       ERR(retval, image)
   }
 

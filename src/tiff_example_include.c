@@ -8,7 +8,8 @@
 
 #include <stdio.h>
 #include <stdlib.h> // malloc
-#include <stdint.h> // uint16_t
+#include <stdint.h> // uint32_t
+#include <math.h>
 
 #ifdef __WIN32
   #include <windows.h>
@@ -40,22 +41,21 @@
 
 typedef unsigned int uint;
 
-// Used to calculate buffer
-#define RANGE     65536
-
-
 /* Calculated line pattern inside array.
  * buffer is a left to right downward diagonal line on a different colour
  * background, depending on page.
  */
-int calculateImageArrays(uint width, uint height, uint pages, uint16_t** buffer)
+int calculateImageArrays(uint width, uint height, uint pages,
+                         uint8_t pixel_bit_depth, void** buffer)
 {
   unsigned int i, j, k;
-  uint16_t value;
-  uint16_t pixel_intensity;
-  uint16_t *point;
+  int counter;
+  uint32_t value;
+  uint32_t pixel_intensity;
+  unsigned char* point;
+  float range = pow(2, pixel_bit_depth)-1;
 
-  *buffer = (uint16_t*) malloc(sizeof(uint16_t)*width*height*pages);
+  *buffer = malloc(pixel_bit_depth/8*width*height*pages);
   DEBUGP("malloc on buffer.")
 
   TRYRETURN(buffer == NULL, "Could not allocate buffer.", 4)
@@ -66,15 +66,19 @@ int calculateImageArrays(uint width, uint height, uint pages, uint16_t** buffer)
     for (i = 0; i < height; i++){
       for (j = 0; j < width; j++){
         pixel_intensity = (width*i + j)
-                          * ((float) RANGE/((float) (width*height)));
+                          * ((float) range/((float) (width*height)));
 
         value = (i==j) ? pixel_intensity :
-                         k * ((float) RANGE/((float) (pages)));
+                         k * ((float) range/((float) (pages)));
 
-        *point++ = value;
-      }
-    }
-  }
+        // Load the value in pieces, allows for any size byte buffer
+        for(counter = 0; counter < pixel_bit_depth/8; counter++){
+          *point++ = (char) ((value >> (counter*8)) & 0x000000FF);
+        }
+
+      } // end width loop
+    } // end height loop
+  } // end page loop
 
   return 0;
 }
@@ -85,7 +89,8 @@ int main()
   uint width = 1024;
   uint height = 768;
   uint pages = 4;
-  uint16_t *buffer;
+  uint pixel_bit_depth = 16;
+  void* buffer;
 
   char* output_path = "output.tif";
   char* artist = "Artist";
@@ -99,16 +104,18 @@ int main()
   // linked file or from a dynamic library.
 
 
-  TRYFUNC(calculateImageArrays(width, height, pages, &buffer),
+  TRYFUNC(calculateImageArrays(width, height, pages, pixel_bit_depth, &buffer),
           "Could not calclate buffer.")
   DEBUGP("Calculated buffer.")
 
-  TRYFUNC(tiffWrite(width, height, pages,
+  TRYFUNC(tiffWrite(width, height, pages, pixel_bit_depth,
                     artist, copyright, make, model,
                     software, image_desc,
                     output_path, buffer),
           "Could not create tiff.")
   DEBUGP("Wrote TIFF.")
+
+  free(buffer);
 
   return 0;
 }
