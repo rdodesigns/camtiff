@@ -60,11 +60,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	return TRUE;
 }
 
-extern __declspec(dllexport)int tiffWrite(uint16_t width,
-                              uint16_t height, uint16_t pages,
-                              char* artist, char* copyright, char* make,
-                              char* model, char* software, char* image_desc,
-                              char* output_path, uint16_t* buffer);
+extern __declspec(dllexport)int tiffWrite(uint32_t width, uint32_t height,
+              uint32_t pages, uint8_t pixel_bit_depth,
+              char* artist, char* copyright, char* make, char* model,
+              char* software, char* image_desc,
+              char* output_path, void* buffer);
 #endif
 
 struct stack {
