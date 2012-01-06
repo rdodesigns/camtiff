@@ -2,6 +2,9 @@ Introduction
 ============
 
 Supports writing 8, 16, and 32 bit unsigned integer image stacks.
+
+A precompiled Windows 32-bit DLL can be found in the _built/_ directory.
+
 Compiling
 =========
 
