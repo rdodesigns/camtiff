@@ -1,14 +1,7 @@
-Cloning
-=======
+Introduction
+============
 
-For contributors
-
-    git clone git@github.com:LaserAnalytics/camtiff.git
-
-For read-only
-
-    git clone git://github.com/LaserAnalytics/camtiff.git
-
+Supports writing 8, 16, and 32 bit unsigned integers image stacks.
 Compiling
 =========
 
@@ -60,7 +53,7 @@ The official instructions for compiling libTIFF on Windows can be found
 [here][libtiff_build], although the only part of the library that needs to be
 compiled is the dll itself, which can be done with `nmake /f Makefile.vc lib`.
 __Again,  make sure that the nmake.opt file uses the /MT linker option instead
-of /MD.__ 
+of /MD.__
 
 Note that `nmake` may be most easily accessed through the VS2010 command prompt
 program, and some errors may be produced if you compile the libtiff tools along
@@ -78,10 +71,11 @@ camtiff easier to read and debug.
 The relevant code parameters are here.
 
 ```C
-int tiffWrite(uint16_t width, uint16_t height, uint16_t pages,
+int tiffWrite(uint32_t width, uint32_t height,
+              uint32_t pages, uint8_t pixel_bit_depth,
               char* artist, char* copyright, char* make, char* model,
               char* software, char* image_desc,
-              char* output_path, uint16_t* buffer);
+              char* output_path, void* buffer);
 ```
 
 To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the
