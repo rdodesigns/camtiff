@@ -1,7 +1,7 @@
 Introduction
 ============
 
-Supports writing 8, 16, and 32 bit unsigned integers image stacks.
+Supports writing 8, 16, and 32 bit unsigned integer image stacks.
 Compiling
 =========
 
