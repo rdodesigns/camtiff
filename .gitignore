@@ -1,6 +1,5 @@
 *.so
 *.o
-*.dll
 *.a
 *.filters
 *.user
