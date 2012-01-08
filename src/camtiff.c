@@ -37,10 +37,10 @@
                      TIFFClose(img); return e;}
 
 
-static inline void* moveBufferPointer(const void* const buffer,
-                                      uint32_t distance, uint8_t element_size)
+static inline void* moveArrayPtr(const void* const ptr,
+                                 unsigned int distance, uint8_t element_size)
 {
-  return (void *) (((char *) buffer)+(distance*element_size/8));
+  return (void *) (((char *) ptr)+(distance*element_size/8));
 }
 
 int writeSubFile(TIFF *image, struct page page, struct metadata meta)
@@ -120,7 +120,7 @@ int writeSubFile(TIFF *image, struct page page, struct metadata meta)
   // Write the information to the file
   // -1 on error, (width*height)*(RESISBITS/8) on success
   for (i=0; i < page.height; i++) {
-    strip_buffer = moveBufferPointer(page.buffer,
+    strip_buffer = moveArrayPtr(page.buffer,
                                      i*page.width, page.pixel_bit_depth);
     if ((retval = TIFFWriteEncodedStrip(image, i,
                                         strip_buffer,
@@ -180,7 +180,7 @@ int tiffWrite(uint32_t width, uint32_t height,
 
   // Write pages from combined buffer
   for (k = 0; k < pages; k++){
-    page.buffer = moveBufferPointer(buffer,
+    page.buffer = moveArrayPtr(buffer,
                                     k*width*height, page.pixel_bit_depth);
     if ((retval = writeSubFile(image, page, meta)))
       ERR(retval, image)
