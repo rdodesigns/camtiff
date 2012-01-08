@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <time.h>   // strftime
 #include <tiffio.h> // libTIFF (preferably 3.9.5+)
 
@@ -36,7 +37,8 @@
                      TIFFClose(img); return e;}
 
 
-void* moveBufferPointer(void* buffer, uint32_t distance, uint8_t element_size)
+static inline void* moveBufferPointer(const void* const buffer,
+                                      uint32_t distance, uint8_t element_size)
 {
   return (void *) (((char *) buffer)+(distance*element_size/8));
 }
@@ -140,8 +142,9 @@ int writeSubFile(TIFF *image, struct page page, struct metadata meta)
 
 
 void setMetadata(struct metadata* data,
-                 char* artist, char* copyright, char* make, char* model,
-                 char* software, char* image_desc)
+                 const char* artist, const char* copyright, const char* make,
+                 const char* model, const char* software,
+                 const char* image_desc)
 {
   data->artist = artist;
   data->copyright = copyright;
@@ -153,9 +156,9 @@ void setMetadata(struct metadata* data,
 
 int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
-              char* artist, char* copyright, char* make, char* model,
-              char* software, char* image_desc,
-              char* output_path, void* buffer)
+              const char* artist, const char* copyright, const char* make,
+              const char* model, const char* software, const char* image_desc,
+              const char* output_path, const void* const buffer)
 {
   int retval;
   uint32_t k;

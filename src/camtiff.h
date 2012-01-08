@@ -62,16 +62,27 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 extern __declspec(dllexport)int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
-              char* artist, char* copyright, char* make, char* model,
-              char* software, char* image_desc,
-              char* output_path, void* buffer);
+              const char* artist, const char* copyright, const char* make,
+              const char* model, const char* software, const char* image_desc,
+              const char* output_path, const void* const buffer);
 #endif
+
+// TODO: Fill out metadata struct
+struct metadata {
+  const char* artist;
+  const char* copyright;
+  const char* make;
+  const char* model;
+  const char* software;
+  const char* image_desc;
+};
 
 struct stack {
   uint32_t width;
   uint32_t height;
   uint32_t pages;
   uint8_t pixel_bit_depth;
+  struct metadata meta;
   void* buffer;
 };
 
@@ -79,18 +90,10 @@ struct page {
   uint32_t width;
   uint32_t height;
   uint8_t pixel_bit_depth;
+  struct metadata meta;
   void* buffer;
 };
 
-// TODO: Fill out metadata struct
-struct metadata {
-  char* artist;
-  char* copyright;
-  char* make;
-  char* model;
-  char* software;
-  char* image_desc;
-};
 
 // TODO: Fill out image struct
 struct image {
@@ -103,6 +106,7 @@ int writeSubFile(TIFF *image, struct page page, struct metadata meta);
 
 int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
-              char* artist, char* copyright, char* make, char* model,
-              char* software, char* image_desc,
-              char* output_path, void* buffer);
+              const char* artist, const char* copyright, const char* make,
+              const char* model, const char* software, const char* image_desc,
+              const char* output_path, const void* const buffer);
+
