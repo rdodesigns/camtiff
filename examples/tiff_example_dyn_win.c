@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <windows.h> // DLL loading
 
-#include "buffer.h"
-#include "error.h"
+#include "../src/buffer.h"
+#include "../src/error.h"
 
 // Globals
 typedef int (*importFunc)();

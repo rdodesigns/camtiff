@@ -41,13 +41,13 @@ if [ "$1" = "lib" ]; then
       -I/opt/local/include -O3
     clang -shared -lc -o bin/camtiff.so bin/camtiff.o -L/opt/local/lib -ltiff
     clang -o bin/tiff_write_dyn \
-      src/tiff_example_dyn_unix.c src/error.c src/buffer.c \
+      examples/tiff_example_dyn_unix.c src/error.c src/buffer.c \
       -ldl -ltiff -Lbin/ -L/opt/local/lib $DEBUG -DLIB -Wall -Wextra -O3
   elif [ "$PLATFORM" = "Linux" ]; then
     clang -c -fpic -o bin/camtiff.o src/camtiff.c -Wall -Wextra -O3
     clang -shared -lc -o bin/camtiff.so bin/camtiff.o
     clang -o bin/tiff_write_dyn \
-      src/tiff_example_dyn_unix.c src/error.c src/buffer.c \
+      examples/tiff_example_dyn_unix.c src/error.c src/buffer.c \
       -ldl -ltiff -Lbin/ $DEBUG -DLIB -Wall -Wextra -O3
   fi
 
@@ -59,12 +59,12 @@ else
   echo "Compiling static verson."
 
   if [ "$PLATFORM" = "Darwin" ]; then
-    clang -obin/tiff_write_static src/tiff_example_include.c src/camtiff.c \
+    clang -obin/tiff_write_static examples/tiff_example_include.c src/camtiff.c \
       src/buffer.c src/error.c \
       -ltiff -I/opt/local/include -L/opt/local/lib $DEBUG \
       -Wall -Wextra -O3
   elif [ "$PLATFORM" = "Linux" ]; then
-    clang -obin/tiff_write_static src/tiff_example_include.c src/camtiff.c \
+    clang -obin/tiff_write_static examples/tiff_example_include.c src/camtiff.c \
       src/buffer.c src/error.c -ltiff $DEBUG -Wall -Wextra -O3
   fi
 fi

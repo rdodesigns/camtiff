@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <dlfcn.h>  // shared object
 
-#include "buffer.h"
-#include "error.h"
+#include "../src/buffer.h"
+#include "../src/error.h"
 
 
 // Globals

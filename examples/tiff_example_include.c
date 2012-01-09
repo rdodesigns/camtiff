@@ -12,9 +12,9 @@
   #include <windows.h>
 #endif
 
-#include "camtiff.h"
-#include "buffer.h"
-#include "error.h"
+#include "../src/camtiff.h"
+#include "../src/buffer.h"
+#include "../src/error.h"
 
 // Example on how to use the library
 int main(void)
