@@ -1,77 +1,37 @@
-/* tiff_example.c - Example of using camtiff
+/* tiff_example.c - Example of using camtiff, Windows
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
- * Date: 28/10/11 21:00:27
+ * Date: 09/01/12 01:47:09
  *
  * Copyright GPL V3
  */
 
 #include <stdio.h>
+#include <windows.h> // DLL loading
 
 #include "buffer.h"
 #include "error.h"
 
-#if defined(WIN32) && !defined(__WIN32)
-#define __WIN32
-#elif defined (__APPLE__) && !defined(__unix__)
-#define __unix__
-#endif
-
-#ifdef __WIN32
-  #include <windows.h>
-#endif
-
-#ifdef __unix__
-  #include <dlfcn.h>  // dll
-#endif
-
-
 // Globals
-#ifdef __unix__
-int (*tiffWritePtr)();
-void *lib;
-const char *dlError;
-#elif defined(__WIN32)
 typedef int (*importFunc)();
 HISTANCE lib;
 importFunc tiffWritePtr;
-#endif
 
 int opendl()
 {
-  #if defined(__unix__)
-    lib = dlopen("camtiff.so", RTLD_LAZY);
-    dlError = dlerror();
-    TRYRETURN(dlError, "Could not load camtiff.so", 1)
-
-    tiffWritePtr = dlsym(lib, "tiffWrite");
-    dlError = dlerror();
-    TRYRETURN(dlError, "Could not load tiffWrite from dl.", 2)
-
-  #elif defined(__WIN32)
     lib = LoadLibrary(TEXT("camtiff.dll"));
     TRYRETURN(lib == NULL, "Could not load camtiff.dll", 1)
 
     tiffWritePtr = (importFunc)GetProcAddress(lib, "tiffWrite");
     TRYRETURN(tiffWritePtr == NULL, "Could not load tiffWrite from DLL.", 2)
 
-  #endif
-
     return 0;
 }
 
 int closedl()
 {
-  #if defined(__unix__)
-    int retval;
-
-    retval = dlclose(lib);
-    dlError = dlerror();
-    TRYRETURN(dlError, "Could not close camtiff.so", 3)
-
-  #elif defined(__WIN32)
     FreeLibrary(lib);
-  #endif
+
     return 0;
 }
 
