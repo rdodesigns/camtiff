@@ -66,7 +66,7 @@ with the libtiff library files.
 Using in LabVIEW
 ================
 
-See [this article][LabVIEW_DLL] (skipping to step 9) for how to use the
+See [this article][LabVIEW_DLL]([pdf][LabVIEW_DLL_pdf]) (skipping to step 9) for how to use the
 created DLL. It is advisable to move the DLL to a system wide stable location
 and create a subVI to use the DLL, as this will make the program that uses
 camtiff easier to read and debug.
@@ -88,5 +88,6 @@ Function Node_ VI.
 
 [libtiff_build]: http://www.remotesensing.org/libtiff/build.html#PC "Building the libTIFF Software Distribution"
 [LabVIEW_DLL]: https://decibel.ni.com/content/docs/DOC-1690 "Using Existing C Code or a DLL in LabVIEW"
+[LabVIEW_DLL_pdf]: https://github.com/LaserAnalytics/camtiff/blob/master/doc/ni_using_dll_labview.pdf
 [MP]: http://www.macports.org/ "Macports home page"
 [VS2010Express]: http://www.microsoft.com/visualstudio/en-gb/express "Microsoft Visual Studio Express 2010 download page"
