@@ -36,9 +36,13 @@
 #define ERR(e, img) {printf("An error occured. Code %d\n", e); \
                      TIFFClose(img); return e;}
 
+#ifdef WIN32
+#define inline __inline // Microsoft, I hate you (uses C89).
+#endif
+
 
 static inline void* moveArrayPtr(const void* const ptr,
-                                 unsigned int distance, uint8_t element_size)
+                                   unsigned int distance, uint8_t element_size)
 {
   return (void *) (((char *) ptr)+(distance*element_size/8));
 }
