@@ -169,6 +169,9 @@ int tiffWrite(uint32_t width, uint32_t height,
   struct page page;
   struct metadata meta;
 
+  if (!(pixel_bit_depth == 8 || pixel_bit_depth == 16 || pixel_bit_depth == 32))
+    return EBITDEPTH;
+
   TIFF *image;
   // Open the TIFF file
   if((image = TIFFOpen(output_path, "w")) == NULL){

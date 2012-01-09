@@ -43,6 +43,7 @@
 #define EMALLOC    2
 #define ETIFFOPEN  3
 #define ETIFFWRITE 4
+#define EBITDEPTH  5
 
 #if defined(LIB) && defined(__WIN32)
 BOOL APIENTRY DllMain( HMODULE hModule,
