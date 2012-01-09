@@ -13,8 +13,8 @@
 #endif
 
 #include "../src/camtiff.h"
-#include "../src/buffer.h"
-#include "../src/error.h"
+#include "buffer.h"
+#include "error.h"
 
 // Example on how to use the library
 int main(void)
