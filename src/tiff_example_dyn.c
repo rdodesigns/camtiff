@@ -7,8 +7,9 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h> // malloc
-#include <stdint.h> // uint16_t
+
+#include "buffer.h"
+#include "error.h"
 
 #if defined(WIN32) && !defined(__WIN32)
 #define __WIN32
@@ -24,34 +25,6 @@
   #include <dlfcn.h>  // dll
 #endif
 
-
-// Conditional debug messages.
-#ifdef DEBUG
-  #define DEBUGP(e) printf("%s\n", e);
-#else
-  #define DEBUGP(e)
-#endif
-
-// Simplified try something and return error functions.
-#define TRYFUNC(e, msg)    \
-  { int retval;            \
-    if ((retval = e)) {    \
-      printf("%s\n", msg); \
-      return retval;       \
-    }                      \
-  }
-
-#define TRYRETURN(e, msg, retcode) \
-    if (e) {                       \
-      printf("%s\n", msg);         \
-      return retcode;              \
-    }
-
-
-typedef unsigned int uint;
-
-// Used to calculate buffer
-#define RANGE     65536
 
 // Globals
 #ifdef __unix__
@@ -102,48 +75,15 @@ int closedl()
     return 0;
 }
 
-/* Calculated line pattern inside array.
- * buffer is a left to right downward diagonal line on a different colour
- * background, depending on page.
- */
-int calculateImageArrays(uint width, uint height, uint pages, uint16_t** buffer)
-{
-  unsigned int i, j, k;
-  uint16_t value;
-  uint16_t pixel_intensity;
-  uint16_t *point;
-
-  *buffer = (uint16_t*) malloc(sizeof(uint16_t)*width*height*pages);
-  DEBUGP("malloc on buffer.")
-
-  TRYRETURN(buffer == NULL, "Could not allocate buffer.", 4)
-
-  point = *buffer;
-
-  for (k = 0; k < pages; k++){
-    for (i = 0; i < height; i++){
-      for (j = 0; j < width; j++){
-        pixel_intensity = (width*i + j)
-                          * ((float) RANGE/((float) (width*height)));
-
-        value = (i==j) ? pixel_intensity :
-                         k * ((float) RANGE/((float) (pages)));
-
-        *point++ = value;
-      }
-    }
-  }
-
-  return 0;
-}
 
 // Example on how to use the library
 int main()
 {
-  uint width = 1024;
-  uint height = 768;
-  uint pages = 4;
-  uint16_t *buffer;
+  unsigned int width = 1024;
+  unsigned int height = 768;
+  unsigned int pages = 4;
+  unsigned int pixel_bit_depth = 16;
+  void* buffer;
 
   char* output_path = "output.tif";
   char* artist = "Artist";
@@ -158,11 +98,11 @@ int main()
 
   TRYFUNC(opendl(), "Could not use dynamic library.")
 
-  TRYFUNC(calculateImageArrays(width, height, pages, &buffer),
+  TRYFUNC(calculateImageArrays(width, height, pages, pixel_bit_depth, &buffer),
           "Could not calclate buffer.")
   DEBUGP("Calculated buffer.")
 
-  TRYFUNC((*tiffWritePtr) (width, height, pages,
+  TRYFUNC((*tiffWritePtr) (width, height, pages, pixel_bit_depth,
                            artist, copyright, make, model,
                            software, image_desc,
                            output_path, buffer),

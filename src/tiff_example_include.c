@@ -7,89 +7,22 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h> // malloc
-#include <stdint.h> // uint32_t
-#include <math.h>
 
 #ifdef __WIN32
   #include <windows.h>
 #endif
 
 #include "camtiff.h"
-
-// Conditional debug messages.
-#ifdef DEBUG
-  #define DEBUGP(e) printf("%s\n", e);
-#else
-  #define DEBUGP(e)
-#endif
-
-// Simplified try something and return error functions.
-#define TRYFUNC(e, msg)    \
-  { int retval;            \
-    if ((retval = e)) {    \
-      printf("%s\n", msg); \
-      return retval;       \
-    }                      \
-  }
-
-#define TRYRETURN(e, msg, retcode) \
-    if (e) {                       \
-      printf("%s\n", msg);         \
-      return retcode;              \
-    }
-
-typedef unsigned int uint;
-
-/* Calculated line pattern inside array.
- * buffer is a left to right downward diagonal line on a different colour
- * background, depending on page.
- */
-int calculateImageArrays(uint width, uint height, uint pages,
-                         uint8_t pixel_bit_depth, void** buffer)
-{
-  unsigned int i, j, k;
-  int counter;
-  uint32_t value;
-  uint32_t pixel_intensity;
-  unsigned char* point;
-  float range = pow(2, pixel_bit_depth)-1;
-
-  *buffer = malloc(pixel_bit_depth/8*width*height*pages);
-  DEBUGP("malloc on buffer.")
-
-  TRYRETURN(buffer == NULL, "Could not allocate buffer.", 4)
-
-  point = *buffer;
-
-  for (k = 0; k < pages; k++){
-    for (i = 0; i < height; i++){
-      for (j = 0; j < width; j++){
-        pixel_intensity = (width*i + j)
-                          * ((float) range/((float) (width*height)));
-
-        value = (i==j) ? pixel_intensity :
-                         k * ((float) range/((float) (pages)));
-
-        // Load the value in pieces, allows for any size byte buffer
-        for(counter = 0; counter < pixel_bit_depth/8; counter++){
-          *point++ = (char) ((value >> (counter*8)) & 0x000000FF);
-        }
-
-      } // end width loop
-    } // end height loop
-  } // end page loop
-
-  return 0;
-}
+#include "buffer.h"
+#include "error.h"
 
 // Example on how to use the library
-int main()
+int main(void)
 {
-  uint width = 1024;
-  uint height = 768;
-  uint pages = 4;
-  uint pixel_bit_depth = 16;
+  unsigned int width = 1024;
+  unsigned int height = 768;
+  unsigned int pages = 4;
+  unsigned int pixel_bit_depth = 16;
   void* buffer;
 
   char* output_path = "output.tif";
@@ -115,7 +48,7 @@ int main()
           "Could not create tiff.")
   DEBUGP("Wrote TIFF.")
 
-  free(buffer);
+  destroyBuffer(buffer);
 
   return 0;
 }

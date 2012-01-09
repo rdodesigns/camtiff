@@ -40,13 +40,15 @@ if [ "$1" = "lib" ]; then
     clang -c -fpic -o bin/camtiff.o src/camtiff.c -Wall -Wextra \
       -I/opt/local/include -O3
     clang -shared -lc -o bin/camtiff.so bin/camtiff.o -L/opt/local/lib -ltiff
-    clang -o bin/tiff_write_dyn src/tiff_example_dyn.c -ldl -ltiff \
-          -Lbin/ -L/opt/local/lib $DEBUG -DLIB -Wall -Wextra -O3
+    clang -o bin/tiff_write_dyn \
+      src/tiff_example_dyn.c src/error.c src/buffer.c \
+      -ldl -ltiff -Lbin/ -L/opt/local/lib $DEBUG -DLIB -Wall -Wextra -O3
   elif [ "$PLATFORM" = "Linux" ]; then
     clang -c -fpic -o bin/camtiff.o src/camtiff.c -Wall -Wextra -O3
     clang -shared -lc -o bin/camtiff.so bin/camtiff.o
-    clang -o bin/tiff_write_dyn src/tiff_example_dyn.c -ldl -ltiff -Lbin/ \
-      $DEBUG -DLIB -Wall -Wextra -O3
+    clang -o bin/tiff_write_dyn \
+      src/tiff_example_dyn.c src/error.c src/buffer.c \
+      -ldl -ltiff -Lbin/ $DEBUG -DLIB -Wall -Wextra -O3
   fi
 
 # Include file version.
@@ -58,9 +60,11 @@ else
 
   if [ "$PLATFORM" = "Darwin" ]; then
     clang -obin/tiff_write_static src/tiff_example_include.c src/camtiff.c \
-      -ltiff -I/opt/local/include -L/opt/local/lib $DEBUG -Wall -Wextra -O3
+      src/buffer.c src/error.c \
+      -ltiff -I/opt/local/include -L/opt/local/lib $DEBUG \
+      -Wall -Wextra -O3
   elif [ "$PLATFORM" = "Linux" ]; then
     clang -obin/tiff_write_static src/tiff_example_include.c src/camtiff.c \
-      -ltiff $DEBUG -Wall -Wextra -O3
+      src/buffer.c src/error.c -ltiff $DEBUG -Wall -Wextra -O3
   fi
 fi

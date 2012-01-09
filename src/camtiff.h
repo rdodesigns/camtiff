@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <tiffio.h> // libTIFF (preferably 3.9.5+)
+#include <stdint.h>
 
 #if defined(WIN32) && !defined(__WIN32)
 #define __WIN32
