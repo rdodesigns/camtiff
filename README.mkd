@@ -76,9 +76,9 @@ The relevant code parameters are here.
 ```C
 int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
-              char* artist, char* copyright, char* make, char* model,
-              char* software, char* image_desc,
-              char* output_path, void* buffer);
+              const char* artist, const char* copyright, const char* make,
+              const char* model, const char* software, const char* image_desc,
+              const char* output_path, const void* const buffer);
 ```
 
 To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the
