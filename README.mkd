@@ -66,12 +66,10 @@ with the libtiff library files.
 Using in LabVIEW
 ================
 
-See [this article][LabVIEW_DLL]([pdf][LabVIEW_DLL_pdf]) (skipping to step 9) for how to use the
-created DLL. It is advisable to move the DLL to a system wide stable location
-and create a subVI to use the DLL, as this will make the program that uses
-camtiff easier to read and debug.
+See [this article][LabVIEW_DLL]([pdf][LabVIEW_DLL_pdf]) (skipping to step 9)
+for how to use the created DLL.
 
-The relevant code parameters are here.
+The relevant function declaration is below.
 
 ```C
 int tiffWrite(uint32_t width, uint32_t height,
