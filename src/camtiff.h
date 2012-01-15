@@ -62,7 +62,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	return TRUE;
 }
 
-extern __declspec(dllexport)int tiffWrite(uint32_t width, uint32_t height,
+extern __declspec(dllexport)
+int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
               const char* artist, const char* copyright, const char* make,
               const char* model, const char* software, const char* image_desc,
