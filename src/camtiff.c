@@ -27,44 +27,56 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h> // malloc
 #include <time.h>   // strftime
 #include <tiffio.h> // libTIFF (preferably 3.9.5+)
 
 #include "camtiff.h"
+#include "json_validate.h"
 
 // Autoclosing error function
-#define ERR(e, img) {printf("An error occured. Code %d\n", e); \
-                     TIFFClose(img); return e;}
+#define ERR(e, img, ext_meta) {printf("An error occured. Code %d\n", e); \
+                               TIFFClose(img); free(ext_meta); \
+                               return e;}
 
 #ifdef WIN32
 #define inline __inline // Microsoft, I hate you (uses C89).
 #endif
 
 
-static inline void* moveArrayPtr(const void* const ptr,
+static inline const void* moveArrayPtr(const void* const ptr,
                                    unsigned int distance, uint8_t element_size)
 {
   return (void *) (((char *) ptr)+(distance*element_size/8));
 }
 
-int writeSubFile(TIFF *image, struct page page, struct metadata meta)
+int writeSubFile(TIFF *image, struct page page, struct basic_metadata meta,
+                 const char* ext_meta, bool strict)
 {
   int retval;
   uint32_t i;
-  void* strip_buffer;
+  const void* strip_buffer;
 
   // function called for each file, iterates to create pages.
   static int file_num = 0;
+  static TIFF *image_cached = NULL;
 
   // Time vars
   time_t local_current_time;
   char time_str[20];
+
+  // Allows calls to this function to act like strtok.
+  if (image != NULL){
+    file_num = 0;
+    image_cached = image;
+  }
+
+
+  time(&local_current_time);
 #ifdef __WIN32
   struct tm gmt_current_time;
 
   // Get time of slice
-  time(&local_current_time);
-
   retval = gmtime_s(&gmt_current_time, &local_current_time);
   if (retval) {printf("Could not get UTC.\n"); return retval;}
 
@@ -73,60 +85,81 @@ int writeSubFile(TIFF *image, struct page page, struct metadata meta)
   struct tm* gmt_current_time;
 
   // Get time of slice
-  time(&local_current_time);
   gmt_current_time = gmtime(&local_current_time);
   strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", gmt_current_time);
 #endif
 
   // Set directory (subfile) to next number since last function call.
-  TIFFSetDirectory(image, file_num);
+  TIFFSetDirectory(image_cached, file_num);
 
   // Set up next subimage in case the current one craps out.
   file_num++;
 
   // We need to set some values for basic tags before we can add any data
-  TIFFSetField(image, TIFFTAG_IMAGEWIDTH, page.width);
-  TIFFSetField(image, TIFFTAG_IMAGELENGTH, page.height);
-  TIFFSetField(image, TIFFTAG_BITSPERSAMPLE, page.pixel_bit_depth);
-  TIFFSetField(image, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
-  TIFFSetField(image, TIFFTAG_ROWSPERSTRIP, 1);
+  TIFFSetField(image_cached, TIFFTAG_IMAGEWIDTH, page.width);
+  TIFFSetField(image_cached, TIFFTAG_IMAGELENGTH, page.height);
+  TIFFSetField(image_cached, TIFFTAG_BITSPERSAMPLE, page.pixel_bit_depth);
+  TIFFSetField(image_cached, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT);
+  TIFFSetField(image_cached, TIFFTAG_ROWSPERSTRIP, 1);
 
   // # components per pixel. RGB is 3, gray is 1.
-  TIFFSetField(image, TIFFTAG_SAMPLESPERPIXEL, 1);
+  TIFFSetField(image_cached, TIFFTAG_SAMPLESPERPIXEL, 1);
 
   // LZW lossless compression
-  TIFFSetField(image, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
+  TIFFSetField(image_cached, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
 
   // Black is 0x0000, white is 0xFFFF
-  TIFFSetField(image, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+  TIFFSetField(image_cached, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
 
   // Big-endian
-  TIFFSetField(image, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-  TIFFSetField(image, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(image_cached, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
+  TIFFSetField(image_cached, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 
   // Datetime in format "Y:m:D H:M:S"
-  TIFFSetField(image, TIFFTAG_DATETIME, time_str);
+  TIFFSetField(image_cached, TIFFTAG_DATETIME, time_str);
 
   // Image metadata
-  TIFFSetField(image, TIFFTAG_ARTIST, meta.artist);
-  TIFFSetField(image, TIFFTAG_COPYRIGHT, meta.copyright);
-  /*TIFFSetField(image, TIFFTAG_HOSTCOMPUTER, "Windows XP");*/
-  TIFFSetField(image, TIFFTAG_MAKE, meta.make);
-  TIFFSetField(image, TIFFTAG_MODEL, meta.model);
-  TIFFSetField(image, TIFFTAG_SOFTWARE, meta.software);
-  TIFFSetField(image, TIFFTAG_IMAGEDESCRIPTION, meta.image_desc);
+  TIFFSetField(image_cached, TIFFTAG_ARTIST, meta.artist);
+  TIFFSetField(image_cached, TIFFTAG_COPYRIGHT, meta.copyright);
+  TIFFSetField(image_cached, TIFFTAG_MAKE, meta.make);
+  TIFFSetField(image_cached, TIFFTAG_MODEL, meta.model);
+  TIFFSetField(image_cached, TIFFTAG_SOFTWARE, meta.software);
+  TIFFSetField(image_cached, TIFFTAG_IMAGEDESCRIPTION, meta.image_desc);
 
   // Pixel density and units. Set to std screen resolution size.
-  TIFFSetField(image, TIFFTAG_XRESOLUTION, 72);
-  TIFFSetField(image, TIFFTAG_YRESOLUTION, 72);
-  TIFFSetField(image, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
+  TIFFSetField(image_cached, TIFFTAG_XRESOLUTION, 72);
+  TIFFSetField(image_cached, TIFFTAG_YRESOLUTION, 72);
+  if (!(ext_meta == NULL || strlen(ext_meta) == 0)){
+    char camtiff_json[64];
+    if (sprintf(camtiff_json, "{\"camtiff_version\":%d,\"strict\":%s}", CAMTIFF_VERSION, strict ? "true" : "false") < 0){
+      // TODO: ??
+    }
+
+    if (!validateJSON(ext_meta)){
+      // Add spaces at the end of the JSON.
+      int size = strlen(ext_meta) + 4096 + strlen(camtiff_json);
+      char* extended_field = (char*) malloc(size);
+      strcpy(extended_field, camtiff_json);
+      strcat(extended_field, ext_meta);
+      memset(extended_field + strlen(extended_field), ' ', 4096);
+      TIFFSetField(image_cached, TIFFTAG_XMLPACKET, size, extended_field);
+      free(extended_field);
+    }
+    else {
+      if (strict)
+        printf("Could not set JSON Packet.\n");
+      else
+        TIFFSetField(image_cached, TIFFTAG_XMLPACKET, strlen(ext_meta), ext_meta);
+    }
+  }
+  TIFFSetField(image_cached, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
 
   // Write the information to the file
   // -1 on error, (width*height)*(RESISBITS/8) on success
   for (i=0; i < page.height; i++) {
     strip_buffer = moveArrayPtr(page.buffer,
                                      i*page.width, page.pixel_bit_depth);
-    if ((retval = TIFFWriteEncodedStrip(image, i,
+    if ((retval = TIFFWriteEncodedStrip(image_cached, i,
                                         strip_buffer,
                                         page.width*page.pixel_bit_depth/8))
         == -1){
@@ -136,7 +169,7 @@ int writeSubFile(TIFF *image, struct page page, struct metadata meta)
   }
 
   // 1 on error, 0 on success
-  if (!(retval = TIFFWriteDirectory(image))){
+  if (!(retval = TIFFWriteDirectory(image_cached))){
     printf("Could not write directory to tiff.\n");
     return EWRITEDIR;
   }
@@ -145,7 +178,7 @@ int writeSubFile(TIFF *image, struct page page, struct metadata meta)
 }
 
 
-void setMetadata(struct metadata* data,
+void setMetadata(struct basic_metadata* data,
                  const char* artist, const char* copyright, const char* make,
                  const char* model, const char* software,
                  const char* image_desc)
@@ -162,15 +195,22 @@ int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
               const char* artist, const char* copyright, const char* make,
               const char* model, const char* software, const char* image_desc,
+              const char* ext_metadata, bool strict,
               const char* output_path, const void* const buffer)
 {
   int retval;
   uint32_t k;
   struct page page;
-  struct metadata meta;
+  struct basic_metadata meta;
+  const char* delimiters = ";";
+  char* ext_metadata_mutable;
+  char* ext_metadata_page;
 
   if (!(pixel_bit_depth == 8 || pixel_bit_depth == 16 || pixel_bit_depth == 32))
     return EBITDEPTH;
+
+  if (pages <=0)
+    return EPAGEZERO;
 
   TIFF *image;
   // Open the TIFF file
@@ -182,19 +222,28 @@ int tiffWrite(uint32_t width, uint32_t height,
   page.width = width;
   page.height = height;
   page.pixel_bit_depth=pixel_bit_depth;
-  setMetadata(&meta, artist, copyright, make, model, software, image_desc);
+  page.buffer = buffer;
 
+  setMetadata(&meta, artist, copyright, make, model, software, image_desc);
+  ext_metadata_mutable = (char *) malloc(sizeof(char)*strlen(ext_metadata));
+  strcpy(ext_metadata_mutable, ext_metadata);
+  ext_metadata_page = strtok(ext_metadata_mutable, delimiters);
 
   // Write pages from combined buffer
-  for (k = 0; k < pages; k++){
+  if ((retval = writeSubFile(image, page, meta, ext_metadata_page, strict)))
+    ERR(retval, image, ext_metadata_mutable)
+
+  for (k = 1; k < pages; k++){
+    ext_metadata_page = strtok(NULL, delimiters);
     page.buffer = moveArrayPtr(buffer,
                                     k*width*height, page.pixel_bit_depth);
-    if ((retval = writeSubFile(image, page, meta)))
-      ERR(retval, image)
+    if ((retval = writeSubFile(NULL, page, meta, ext_metadata_page, strict)))
+      ERR(retval, image, ext_metadata_mutable)
   }
 
   // Close the file
   TIFFClose(image);
+  free(ext_metadata_mutable);
 
   return 0;
 }

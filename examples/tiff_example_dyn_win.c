@@ -52,6 +52,7 @@ int main()
   char* model = "Camera Model";
   char* software = "Software";
   char* image_desc = "Created as a dynamic library";
+  char* metadata = "{\"Hi\": 1};{\"Hi\": 2};{\"Hi\": 3};{\"Hi\": 4}";
 
   // Uses global tiffWritePtr, which either points to tiffWrite from a
   // linked file or from a dynamic library.
@@ -64,7 +65,7 @@ int main()
 
   TRYFUNC((*tiffWritePtr) (width, height, pages, pixel_bit_depth,
                            artist, copyright, make, model,
-                           software, image_desc,
+                           software, image_desc, metadata,
                            output_path, buffer),
           "Could not create tiff.")
   DEBUGP("Wrote TIFF.")

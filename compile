@@ -60,7 +60,7 @@ else
 
   if [ "$PLATFORM" = "Darwin" ]; then
     clang -obin/tiff_write_static \
-      examples/tiff_example_include.c src/camtiff.c \
+      examples/tiff_example_include.c src/camtiff.c src/json_validate.c \
       examples/buffer.c examples/error.c \
       -ltiff -I/opt/local/include -L/opt/local/lib $DEBUG \
       -Wall -Wextra -O3

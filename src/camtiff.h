@@ -23,9 +23,9 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
-#include <tiffio.h> // libTIFF (preferably 3.9.5+)
-#include <stdint.h>
+#include <stdint.h>  // uints
+#include <tiffio.h>  // libTIFF (preferably 3.9.5+)
+#include <stdbool.h> // bool type
 
 #if defined(WIN32) && !defined(__WIN32)
 #define __WIN32
@@ -37,6 +37,8 @@
 #include <windows.h>
 #endif
 
+// Version info
+#define CAMTIFF_VERSION 1
 
 // Error Codes
 #define EWRITEDIR  1
@@ -44,6 +46,7 @@
 #define ETIFFOPEN  3
 #define ETIFFWRITE 4
 #define EBITDEPTH  5
+#define EPAGEZERO  6
 
 #if defined(LIB) && defined(__WIN32)
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -67,11 +70,12 @@ int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
               const char* artist, const char* copyright, const char* make,
               const char* model, const char* software, const char* image_desc,
+              const char* ext_metadata, bool strict,
               const char* output_path, const void* const buffer);
 #endif
 
 // TODO: Fill out metadata struct
-struct metadata {
+struct basic_metadata {
   const char* artist;
   const char* copyright;
   const char* make;
@@ -80,12 +84,16 @@ struct metadata {
   const char* image_desc;
 };
 
+//struct ext_metadata {
+
+//};
+
 struct stack {
   uint32_t width;
   uint32_t height;
   uint32_t pages;
   uint8_t pixel_bit_depth;
-  struct metadata meta;
+  struct basic_metadata b_meta;
   void* buffer;
 };
 
@@ -93,8 +101,8 @@ struct page {
   uint32_t width;
   uint32_t height;
   uint8_t pixel_bit_depth;
-  struct metadata meta;
-  void* buffer;
+  struct basic_metadata b_meta;
+  const void* buffer;
 };
 
 
@@ -102,14 +110,16 @@ struct page {
 struct image {
   TIFF* tiff;
   struct stack stack;
-  struct metadata meta;
+  struct basic_metadata meta;
 };
 
-int writeSubFile(TIFF *image, struct page page, struct metadata meta);
+int writeSubFile(TIFF *image, struct page page, struct basic_metadata b_meta,
+                 const char* ext_meta, bool strict);
 
 int tiffWrite(uint32_t width, uint32_t height,
               uint32_t pages, uint8_t pixel_bit_depth,
               const char* artist, const char* copyright, const char* make,
               const char* model, const char* software, const char* image_desc,
+              const char* ext_metadata, bool strict,
               const char* output_path, const void* const buffer);
 
