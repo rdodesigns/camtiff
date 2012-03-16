@@ -38,6 +38,7 @@
 #define inline __inline // Microsoft, I hate you (uses C89).
 #endif
 
+#define RETNONZERO(f) if ((retval = (f)) == 0) return retval
 
 static inline const void* moveArrayPtr(const void* const ptr,
                                        unsigned int dist, uint8_t size)
@@ -112,7 +113,6 @@ CTIFF CTIFFNewFile(const char* output_file)
 
   // TODO: If output_file == NULL, write to tmp location.
   if ((ctiff->tiff = TIFFOpen(output_file, "w")) == NULL){
-    printf("Could not open %s for writing\n", output_file);
     FREE(ctiff);
     return NULL;
   }
@@ -131,7 +131,7 @@ CTIFF CTIFFNewFile(const char* output_file)
   def_dir->timestamp = NULL;
   def_dir->data      = NULL;
   def_dir->next_dir  = NULL;
-  def_dir->refs      = 1;
+  def_dir->refs      = 0;
 
   // Set basic def dir style.
   style->black_is_min = true;
@@ -158,16 +158,6 @@ CTIFF CTIFFNewFile(const char* output_file)
   return ctiff;
 }
 
-int CTIFFCloseFile(CTIFF ctiff)
-{
-  if (ctiff == NULL) return ECTIFFNULL;
-
-  TIFFClose(ctiff->tiff);
-  __CTIFFFreeFile(ctiff);
-
-  return 0;
-}
-
 void __CTIFFFreeExtMeta(CTIFF_extended_metadata *ext_meta)
 {
   if (ext_meta->data == NULL) return;
@@ -179,8 +169,12 @@ void __CTIFFFreeDir(CTIFF_dir *dir)
 {
   if  (dir == NULL) return;
 
-  __CTIFFFreeExtMeta(&dir->ext_meta);
-  FREE(dir->timestamp);
+  if (dir->refs > 1){
+    dir->refs--;
+  } else {
+    __CTIFFFreeExtMeta(&dir->ext_meta);
+    FREE(dir->timestamp);
+  }
 }
 
 int __CTIFFFreeFile(CTIFF ctiff)
@@ -199,6 +193,16 @@ int __CTIFFFreeFile(CTIFF ctiff)
   FREE(ctiff);
   ctiff = NULL;
   tmp_dir = NULL;
+  return 0;
+}
+
+int CTIFFCloseFile(CTIFF ctiff)
+{
+  if (ctiff == NULL) return ECTIFFNULL;
+
+  TIFFClose(ctiff->tiff);
+  __CTIFFFreeFile(ctiff);
+
   return 0;
 }
 
@@ -239,56 +243,37 @@ void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)
 
 int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
 {
-  // TODO: Clean up and correct error handling of __CTIFFWriteStyle
   int retval = 0;
-  // We need to set some values for basic tags before we can add any data
-  if (TIFFSetField(tiff, TIFFTAG_IMAGEWIDTH, style->width) == 0)
-    printf("ERROR: TIFFTAG_IMAGEWIDTH\n");
-  if (TIFFSetField(tiff, TIFFTAG_IMAGELENGTH, style->height) == 0)
-    printf("ERROR: TIFFTAG_IMAGELENGTH\n");
-  if (TIFFSetField(tiff, TIFFTAG_BITSPERSAMPLE, style->bps) == 0)
-    printf("ERROR: TIFFTAG_BITSPERSAMPLE\n");
-
-  // TODO: Create CTIFF to TIFFTAG_SAMPLEFORMAT conversion.
-  if (TIFFSetField(tiff, TIFFTAG_SAMPLEFORMAT, style->pixel_data_type) == 0)
-    printf("ERROR: TIFFTAG_SAMPLEFORMAT\n");
+  // Required for image viewing.
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_IMAGEWIDTH, style->width));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_IMAGELENGTH, style->height));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_BITSPERSAMPLE, style->bps));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_SAMPLEFORMAT, style->pixel_data_type));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_SAMPLESPERPIXEL,
+                                style->in_color ? 3 : 1));
 
   // TODO: Create more optimal ROWSPERSTRIP defined by 8KB segments.
-  TIFFSetField(tiff, TIFFTAG_ROWSPERSTRIP, 1);
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_ROWSPERSTRIP, 1));
 
-  // # components per pixel. RGB is 3, gray is 1
-  if (TIFFSetField(tiff, TIFFTAG_SAMPLESPERPIXEL, style->in_color ? 3 : 1) == 0)
-    printf("ERROR: TIFFTAG_SAMPLESPERPIXEL\n");
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_COMPRESSION, COMPRESSION_LZW));
 
-  // LZW lossless compression
-  if (TIFFSetField(tiff, TIFFTAG_COMPRESSION, COMPRESSION_LZW) == 0)
-    printf("ERROR: TIFFTAG_COMPRESSION\n");
-
-
-  // Black is 0x0000, white is 0xFFFF
+  // Black as min is default.
   if (style->in_color) {
-    if (TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB) == 0)
-        printf("ERROR: TIFFTAG_PHOTOMETRIC COLOR\n");
+    RETNONZERO(TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB));
   } else {
-    if (TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC,
+    RETNONZERO(TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC,
                      style->black_is_min ? PHOTOMETRIC_MINISBLACK :
-                                           PHOTOMETRIC_MINISWHITE)
-        == 0)
-        printf("ERROR: TIFFTAG_PHOTOMETRIC\n");
+                                           PHOTOMETRIC_MINISWHITE));
   }
 
-  // Big-endian
-  if (TIFFSetField(tiff, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB) == 0)
-    printf("ERROR: TIFFTAG_FILLORDER\n");
-  if (TIFFSetField(tiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG) == 0)
-    printf("ERROR: TIFFTAG_PLANARCONFIG\n");
+  // Big-endian chosen at random
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG));
 
-  if (TIFFSetField(tiff, TIFFTAG_XRESOLUTION, style->x_resolution) == 0)
-    printf("ERROR: TIFFTAG_XRESOLUTION\n");
-  if (TIFFSetField(tiff, TIFFTAG_YRESOLUTION, style->y_resolution) == 0)
-    printf("ERROR: TIFFTAG_YRESOLUTION\n");
-  if (TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_NONE) == 0)
-    printf("ERROR: TIFFTAG_RESOLUTIONUNIT\n");
+  // These values do not impact image reading
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_XRESOLUTION, style->x_resolution));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_YRESOLUTION, style->y_resolution));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_NONE));
 
   return retval;
 }
@@ -318,7 +303,8 @@ int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
   for (i=0; i < height; i++) {
     strip_buffer = moveArrayPtr(image, i*width, bps);
 
-    if (TIFFWriteEncodedStrip(tiff, i, strip_buffer, width*bps/8) == -1){
+    if (TIFFWriteEncodedStrip(tiff,i,(void*)strip_buffer,width*bps/8) == -1){
+      // TODO: Is it possible to flush a partial directory?
       return ECTIFFWRITESTRIP;
     }
   }
@@ -361,7 +347,24 @@ void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
   ctiff->write_every_num = num_pages;
 }
 
-int CTIFFAddPage(CTIFF ctiff, const char* name, const char* ext_meta,
+int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
+{
+  if (ctiff == NULL) return ECTIFFNULL;
+  if (dir == NULL) return ECTIFFNULLDIR;
+
+  if (ctiff->first_dir == NULL){
+    ctiff->first_dir = dir;
+  } else {
+    ctiff->last_dir->next_dir = dir;
+  }
+
+  ctiff->last_dir = dir;
+  dir->refs++;
+
+  return 0;
+}
+
+int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
                  const void* page)
 {
   int retval = 0;
@@ -383,20 +386,13 @@ int CTIFFAddPage(CTIFF ctiff, const char* name, const char* ext_meta,
 
   memcpy(new_dir, ctiff->def_dir, sizeof(struct CTIFF_dir_s));
 
-  if (ctiff->first_dir == NULL){
-    ctiff->first_dir = new_dir;
-  } else {
-    ctiff->last_dir->next_dir = new_dir;
-  }
-
   new_dir->timestamp = __CTIFFGetTime();
   new_dir->ext_meta.data = __CTIFFCreateValidExtMeta(ctiff->strict, name,
                                                      ext_meta);
 
   new_dir->data = page;
 
-  ctiff->last_dir = new_dir;
-
+  retval = __CTIFFAddPage(ctiff, new_dir);
   return retval;
 }
 
@@ -478,7 +474,8 @@ int tiffWrite(uint32_t width,
 {
   uint32_t k;
   int retval = 0;
-  void *buf;
+  char ext[64];
+  const void *buf;
 
   CTIFF ctiff = CTIFFNewFile(output_path);
   CTIFFSetPageStyle(ctiff, width, height, pixel_bit_depth, CTIFF_PIXEL_UINT, false, 72, 72);
@@ -489,9 +486,10 @@ int tiffWrite(uint32_t width,
 
   for (k = 0; k < pages; k++){
     printf("Adding image %d\n", k);
+    sprintf(ext, "{\"data\":%d}", k);
     buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
-    if ((retval = CTIFFAddPage(ctiff, "Apollo", "{\"Hi\":1}", buf)) != 0){
+    if ((retval = CTIFFAddNewPage(ctiff, "Apollo", ext, buf)) != 0){
       printf("Could not add image\n");
       __CTIFFFreeFile(ctiff);
       return retval;
