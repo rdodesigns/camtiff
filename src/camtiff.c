@@ -34,21 +34,70 @@
 #include "camtiff.h"
 #include "json_validate.h"
 
-// Autoclosing error function
-#define ERR(e, img, ext_meta) {printf("An error occured. Code %d\n", e); \
-                               TIFFClose(img); free(ext_meta); \
-                               return e;}
-
 #ifdef WIN32
 #define inline __inline // Microsoft, I hate you (uses C89).
 #endif
 
 
 static inline const void* moveArrayPtr(const void* const ptr,
-                                   unsigned int distance, uint8_t element_size)
+                                       unsigned int dist, uint8_t size)
 {
-  return (void *) (((char *) ptr)+(distance*element_size/8));
+  return (void *) (((char *) ptr)+(dist*size/8));
 }
+
+const char* __CTIFFGetTime()
+{
+  time_t local_current_time;
+  char  *time_str = (char*) malloc(20*sizeof(char));
+
+#ifdef __WIN32
+  struct tm gmt_current_time;
+
+  // Get time of slice
+  time(&local_current_time);
+
+  retval = gmtime_s(&gmt_current_time, &local_current_time);
+  if (retval) {printf("Could not get UTC.\n"); return retval;}
+
+  strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", &gmt_current_time);
+#else
+  struct tm* gmt_current_time;
+
+  // Get time of slice
+  time(&local_current_time);
+  gmt_current_time = gmtime(&local_current_time);
+  strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", gmt_current_time);
+#endif
+
+  return time_str;
+}
+
+const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
+                                      const char* ext_meta_str)
+{
+  char *buf = (char*) malloc(128 + strlen(ext_meta_str) + strlen(name));
+  char  buf_ext[strlen(ext_meta_str) + strlen(name)+2];
+  char *def_head = "{\"CamTIFF_Version\":\"%d.%d.%d\","
+                          "\"strict\":%s%s}";
+
+  if (name != NULL && strlen(name) != 0 &&
+      ext_meta_str != NULL && strlen(ext_meta_str) != 0 &&
+      _CTIFFIsValidJSON(ext_meta_str)){
+    sprintf(buf_ext, ",\"%s\":%s", name, ext_meta_str);
+  } else {
+    sprintf(buf_ext, "%s", "");
+  }
+
+  sprintf(buf,def_head,
+              CTIFF_MAJOR_VERSION,
+              CTIFF_MINOR_VERSION,
+              CTIFF_MAINT_VERSION,
+              strict ? "true" : "false",
+              buf_ext);
+
+  return buf;
+}
+
 
 CTIFF CTIFFNewFile(const char* output_file)
 {
@@ -62,18 +111,18 @@ CTIFF CTIFFNewFile(const char* output_file)
   char *white_space = (char*) malloc(white_space_size);
 
   // TODO: If output_file == NULL, write to tmp location.
-  ctiff->tiff = TIFFOpen(output_file, "w");
-  /*if ((ctiff->tiff = TIFFOpen(output_file, "w")) == NULL){*/
-    /*printf("Could not open %s for writing\n", output_file);*/
-    /*FREE(ctiff);*/
-    /*return;*/
-  /*}*/
+  if ((ctiff->tiff = TIFFOpen(output_file, "w")) == NULL){
+    printf("Could not open %s for writing\n", output_file);
+    FREE(ctiff);
+    return NULL;
+  }
 
   // Set root level information
   ctiff->output_file = output_file;
   ctiff->num_dirs = 0;
   ctiff->num_page_styles = 1;
   ctiff->strict = true;
+  ctiff->write_every_num = 1;
 
   ctiff->first_dir = NULL;
   ctiff->last_dir = NULL;
@@ -82,7 +131,7 @@ CTIFF CTIFFNewFile(const char* output_file)
   def_dir->timestamp = NULL;
   def_dir->data      = NULL;
   def_dir->next_dir  = NULL;
-  def_dir->WriteDir  = &TIFFWriteDirectory;
+  def_dir->refs      = 1;
 
   // Set basic def dir style.
   style->black_is_min = true;
@@ -109,9 +158,14 @@ CTIFF CTIFFNewFile(const char* output_file)
   return ctiff;
 }
 
-void CTIFFSetStrict(CTIFF ctiff, bool strict)
+int CTIFFCloseFile(CTIFF ctiff)
 {
-  ctiff->strict = strict;
+  if (ctiff == NULL) return ECTIFFNULL;
+
+  TIFFClose(ctiff->tiff);
+  __CTIFFFreeFile(ctiff);
+
+  return 0;
 }
 
 void __CTIFFFreeExtMeta(CTIFF_extended_metadata *ext_meta)
@@ -148,83 +202,12 @@ int __CTIFFFreeFile(CTIFF ctiff)
   return 0;
 }
 
-const char* __CTIFFGetTime()
+void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
 {
-  time_t local_current_time;
-  char  *time_str = (char*) malloc(20*sizeof(char));
+  char buf[strlen(ext_meta->data) + strlen(ext_meta->white_space) + 1];
+  sprintf(buf, "%s%s", ext_meta->data, ext_meta->white_space);
 
-#ifdef __WIN32
-  struct tm gmt_current_time;
-
-  // Get time of slice
-  time(&local_current_time);
-
-  retval = gmtime_s(&gmt_current_time, &local_current_time);
-  if (retval) {printf("Could not get UTC.\n"); return retval;}
-
-  strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", &gmt_current_time);
-#else
-  struct tm* gmt_current_time;
-
-  // Get time of slice
-  time(&local_current_time);
-  gmt_current_time = gmtime(&local_current_time);
-  strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", gmt_current_time);
-#endif
-
-  return time_str;
-}
-
-void __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
-{
-  // We need to set some values for basic tags before we can add any data
-  if (TIFFSetField(tiff, TIFFTAG_IMAGEWIDTH, style->width) == 0)
-    printf("ERROR: TIFFTAG_IMAGEWIDTH");
-  if (TIFFSetField(tiff, TIFFTAG_IMAGELENGTH, style->height) == 0)
-    printf("ERROR: TIFFTAG_IMAGELENGTH");
-  if (TIFFSetField(tiff, TIFFTAG_BITSPERSAMPLE, style->bps) == 0)
-    printf("ERROR: TIFFTAG_BITSPERSAMPLE");
-
-  // TODO: Create CTIFF to TIFFTAG_SAMPLEFORMAT conversion.
-  if (TIFFSetField(tiff, TIFFTAG_SAMPLEFORMAT, style->pixel_data_type) == 0)
-    printf("ERROR: TIFFTAG_SAMPLEFORMAT");
-
-  // TODO: Create more optimal ROWSPERSTRIP defined by 8KB segments.
-  TIFFSetField(tiff, TIFFTAG_ROWSPERSTRIP, 1);
-
-  // # components per pixel. RGB is 3, gray is 1
-  if (TIFFSetField(tiff, TIFFTAG_SAMPLESPERPIXEL, style->in_color ? 3 : 1) == 0)
-    printf("ERROR: TIFFTAG_SAMPLESPERPIXEL");
-
-  // LZW lossless compression
-  if (TIFFSetField(tiff, TIFFTAG_COMPRESSION, COMPRESSION_LZW) == 0)
-    printf("ERROR: TIFFTAG_COMPRESSION");
-
-
-  // Black is 0x0000, white is 0xFFFF
-  if (style->in_color) {
-    if (TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB) == 0)
-        printf("ERROR: TIFFTAG_PHOTOMETRIC COLOR");
-  } else {
-    if (TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC,
-                     style->black_is_min ? PHOTOMETRIC_MINISBLACK :
-                                           PHOTOMETRIC_MINISWHITE)
-        == 0)
-        printf("ERROR: TIFFTAG_PHOTOMETRIC");
-  }
-
-  // Big-endian
-  if (TIFFSetField(tiff, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB) == 0)
-    printf("ERROR: TIFFTAG_FILLORDER");
-  if (TIFFSetField(tiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG) == 0)
-    printf("ERROR: TIFFTAG_PLANARCONFIG");
-
-  if (TIFFSetField(tiff, TIFFTAG_XRESOLUTION, style->x_resolution) == 0)
-    printf("ERROR: TIFFTAG_XRESOLUTION");
-  if (TIFFSetField(tiff, TIFFTAG_YRESOLUTION, style->y_resolution) == 0)
-    printf("ERROR: TIFFTAG_YRESOLUTION");
-  if (TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_NONE) == 0)
-    printf("ERROR: TIFFTAG_RESOLUTIONUNIT");
+  TIFFSetField(tiff, TIFFTAG_XMLPACKET, sizeof(buf), buf);
 }
 
 void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)
@@ -254,21 +237,68 @@ void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)
   }
 }
 
-void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
+int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
 {
-  char buf[strlen(ext_meta->data) + strlen(ext_meta->white_space) + 1];
-  sprintf(buf, "%s%s", ext_meta->data, ext_meta->white_space);
+  // TODO: Clean up and correct error handling of __CTIFFWriteStyle
+  int retval = 0;
+  // We need to set some values for basic tags before we can add any data
+  if (TIFFSetField(tiff, TIFFTAG_IMAGEWIDTH, style->width) == 0)
+    printf("ERROR: TIFFTAG_IMAGEWIDTH\n");
+  if (TIFFSetField(tiff, TIFFTAG_IMAGELENGTH, style->height) == 0)
+    printf("ERROR: TIFFTAG_IMAGELENGTH\n");
+  if (TIFFSetField(tiff, TIFFTAG_BITSPERSAMPLE, style->bps) == 0)
+    printf("ERROR: TIFFTAG_BITSPERSAMPLE\n");
 
-  TIFFSetField(tiff, TIFFTAG_XMLPACKET, sizeof(buf), buf);
+  // TODO: Create CTIFF to TIFFTAG_SAMPLEFORMAT conversion.
+  if (TIFFSetField(tiff, TIFFTAG_SAMPLEFORMAT, style->pixel_data_type) == 0)
+    printf("ERROR: TIFFTAG_SAMPLEFORMAT\n");
+
+  // TODO: Create more optimal ROWSPERSTRIP defined by 8KB segments.
+  TIFFSetField(tiff, TIFFTAG_ROWSPERSTRIP, 1);
+
+  // # components per pixel. RGB is 3, gray is 1
+  if (TIFFSetField(tiff, TIFFTAG_SAMPLESPERPIXEL, style->in_color ? 3 : 1) == 0)
+    printf("ERROR: TIFFTAG_SAMPLESPERPIXEL\n");
+
+  // LZW lossless compression
+  if (TIFFSetField(tiff, TIFFTAG_COMPRESSION, COMPRESSION_LZW) == 0)
+    printf("ERROR: TIFFTAG_COMPRESSION\n");
+
+
+  // Black is 0x0000, white is 0xFFFF
+  if (style->in_color) {
+    if (TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB) == 0)
+        printf("ERROR: TIFFTAG_PHOTOMETRIC COLOR\n");
+  } else {
+    if (TIFFSetField(tiff, TIFFTAG_PHOTOMETRIC,
+                     style->black_is_min ? PHOTOMETRIC_MINISBLACK :
+                                           PHOTOMETRIC_MINISWHITE)
+        == 0)
+        printf("ERROR: TIFFTAG_PHOTOMETRIC\n");
+  }
+
+  // Big-endian
+  if (TIFFSetField(tiff, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB) == 0)
+    printf("ERROR: TIFFTAG_FILLORDER\n");
+  if (TIFFSetField(tiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG) == 0)
+    printf("ERROR: TIFFTAG_PLANARCONFIG\n");
+
+  if (TIFFSetField(tiff, TIFFTAG_XRESOLUTION, style->x_resolution) == 0)
+    printf("ERROR: TIFFTAG_XRESOLUTION\n");
+  if (TIFFSetField(tiff, TIFFTAG_YRESOLUTION, style->y_resolution) == 0)
+    printf("ERROR: TIFFTAG_YRESOLUTION\n");
+  if (TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_NONE) == 0)
+    printf("ERROR: TIFFTAG_RESOLUTIONUNIT\n");
+
+  return retval;
 }
 
-int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff, int dir_num)
+int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
 {
-  int retval;
+  int retval = 0;
   uint32_t i;
   unsigned int height, width, bps;
   const void *strip_buffer, *image;
-  uint16_t buf[2] = { 0, 65535};
 
   if (dir == NULL) return ECTIFFNULLDIR;
 
@@ -277,142 +307,61 @@ int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff, int dir_num)
   bps    = dir->style.bps;
   image  = dir->data;
 
-  TIFF *tiff2 = TIFFOpen("o.tiff", "w");
-  if (tiff == NULL) printf("null tiff.\n");
-  printf("[%d] %d,%d,%d\n", dir_num, width, height, bps);
-  if ((retval = TIFFSetDirectory(tiff2, dir_num)) == 0)
-    printf("Could not set dir.\n");
-
-  /*TIFFSetField(tiff, TIFFTAG_DATETIME, dir->timestamp);*/
+  TIFFSetField(tiff, TIFFTAG_DATETIME, dir->timestamp);
 
   __CTIFFWriteStyle(&dir->style, tiff);
-  /*__CTIFFWriteBasicMeta(&dir->basic_meta, tiff);*/
-  /*__CTIFFWriteExtMeta(&dir->ext_meta, tiff);*/
+  __CTIFFWriteBasicMeta(&dir->basic_meta, tiff);
+  __CTIFFWriteExtMeta(&dir->ext_meta, tiff);
 
 
   // Write the information to the file -1 on error, strip length on success.
-  /*for (i=0; i < height; i++) {*/
-    /*strip_buffer = moveArrayPtr(image, i*width, bps);*/
-
-    /*if (TIFFWriteEncodedStrip(tiff, i, strip_buffer, width*bps/8) == -1){*/
-      /*printf("Could not write strip to tiff.\n");*/
-      /*return ECTIFFWRITESTRIP;*/
-    /*}*/
-  /*}*/
   for (i=0; i < height; i++) {
     strip_buffer = moveArrayPtr(image, i*width, bps);
 
-    if ((retval = TIFFWriteEncodedStrip(tiff, i, buf, width*bps/8)) == -1){
-      printf("Could not write strip to tiff.\n");
+    if (TIFFWriteEncodedStrip(tiff, i, strip_buffer, width*bps/8) == -1){
       return ECTIFFWRITESTRIP;
     }
-    printf("%d\n", retval);
   }
 
-  // 1 on error, 0 on success
-  if (dir->WriteDir(tiff) == 1){
+
+  // 1 on success, 0 on error
+  if (TIFFWriteDirectory(tiff) != 1){
     printf("Could not write dir to tiff.\n");
     return ECTIFFWRITEDIR;
   }
 
-  return 0;
+  return retval;
 }
 
 int CTIFFWriteFile(CTIFF ctiff)
 {
 
   int retval = 0;
-  int i = 0;
   CTIFF_dir *dir = ctiff->first_dir;
-  TIFF *tiff = ctiff->tiff;
 
   if (ctiff == NULL) return ECTIFFNULL;
 
   dir = ctiff->first_dir;
 
+  /*retval = __CTIFFWriteDir(ctiff->def_dir, ctiff->tiff, i++);*/
   while (dir != NULL) {
-    if ((retval = __CTIFFWriteDir(dir, tiff, i++)) != 0)
-      return retval;
+    if ((retval = __CTIFFWriteDir(dir, ctiff->tiff)) != 0)
+      printf("Failed on attempt to write dir\n");
+      /*return retval;*/
     dir = dir->next_dir;
   }
 
   return 0;
 }
 
-void CTIFFWriteImmediately(CTIFF ctiff, bool write)
+void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
 {
   if (ctiff == NULL) return;
 
-  if (write)
-    ctiff->def_dir->WriteDir = &TIFFCheckpointDirectory;
-  else
-    ctiff->def_dir->WriteDir = &TIFFWriteDirectory;
+  ctiff->write_every_num = num_pages;
 }
 
-int CTIFFSetPageStyle(CTIFF ctiff,
-                      unsigned  int width,
-                      unsigned  int height,
-                      unsigned  int bps,
-                      unsigned char pixel_data_type,
-                               bool in_color,
-                      unsigned  int x_resolution,
-                      unsigned  int y_resolution)
-{
-  CTIFF_dir_style* def_style;
-
-  if (ctiff == NULL) return ECTIFFNULL;
-  def_style = &ctiff->def_dir->style;
-
-  def_style->width        = width;
-  def_style->height       = height;
-  def_style->bps          = bps;
-  def_style->in_color     = in_color;
-  def_style->x_resolution = x_resolution;
-  def_style->y_resolution = y_resolution;
-
-  if ((pixel_data_type >= ECTIFFLAST) || (pixel_data_type <= 0)){
-    printf("oops\n");
-    return ECTIFFPIXELTYPE;
-  }
-  def_style->pixel_data_type = pixel_data_type;
-
-
-
-  return 0;
-}
-
-
-const char* __CTIFFCreateValidExtMeta(bool strict,
-                                      const char* name,
-                                      const char* ext_meta_str)
-{
-  char *buf = (char*) malloc(128 + strlen(ext_meta_str) + strlen(name));
-  char  buf_ext[strlen(ext_meta_str) + strlen(name)+2];
-  char *def_head = "{\"CamTIFF_Version\":\"%d.%d.%d\","
-                          "\"strict\":%s,"
-                          "\"page_styles\":%d%s}";
-
-  if (name != NULL && strlen(name) != 0 &&
-      ext_meta_str != NULL && strlen(ext_meta_str) != 0 &&
-      _CTIFFIsValidJSON(ext_meta_str)){
-    sprintf(buf_ext, "\%s\":%s", name, ext_meta_str);
-  } else {
-    sprintf(buf_ext, "%s", "");
-  }
-
-  sprintf(buf,def_head,
-              CTIFF_MAJOR_VERSION,
-              CTIFF_MINOR_VERSION,
-              CTIFF_MAINT_VERSION,
-              strict ? "true" : "false",
-              buf_ext);
-
-  return buf;
-}
-
-int CTIFFAddPage(CTIFF ctiff,
-                 const char* name,
-                 const char* ext_meta,
+int CTIFFAddPage(CTIFF ctiff, const char* name, const char* ext_meta,
                  const void* page)
 {
   int retval = 0;
@@ -451,6 +400,12 @@ int CTIFFAddPage(CTIFF ctiff,
   return retval;
 }
 
+
+void CTIFFSetStrict(CTIFF ctiff, bool strict)
+{
+  ctiff->strict = strict;
+}
+
 int CTIFFSetBasicMeta(CTIFF ctiff,
                       const void *artist,
                       const void *copyright,
@@ -475,32 +430,55 @@ int CTIFFSetBasicMeta(CTIFF ctiff,
   return 0;
 }
 
-int CTIFFCloseFile(CTIFF ctiff)
+int CTIFFSetPageStyle(CTIFF ctiff,
+                      unsigned  int width,
+                      unsigned  int height,
+                      unsigned  int bps,
+                      unsigned char pixel_data_type,
+                               bool in_color,
+                      unsigned  int x_resolution,
+                      unsigned  int y_resolution)
 {
-  if (ctiff != NULL) __CTIFFFreeFile(ctiff);
+  CTIFF_dir_style* def_style;
+
+  if (ctiff == NULL) return ECTIFFNULL;
+  def_style = &ctiff->def_dir->style;
+
+  def_style->width        = width;
+  def_style->height       = height;
+  def_style->bps          = bps;
+  def_style->in_color     = in_color;
+  def_style->x_resolution = x_resolution;
+  def_style->y_resolution = y_resolution;
+
+  if ((pixel_data_type >= ECTIFFLAST) || (pixel_data_type <= 0)){
+    return ECTIFFPIXELTYPE;
+  }
+  def_style->pixel_data_type = pixel_data_type;
 
   return 0;
 }
 
-int tiffWrite( uint32_t width,
-               uint32_t height,
-               uint32_t pages,
-               uint8_t pixel_bit_depth,
-               const char* artist,
-               const char* copyright,
-               const char* make,
-               const char* model,
-               const char* software,
-               const char* image_desc,
-               const char* ext_metadata_name,
-               const char* ext_metadata,
-               bool strict,
-               const char* output_path,
-               const void* const buffer )
+
+int tiffWrite(uint32_t width,
+              uint32_t height,
+              uint32_t pages,
+              uint8_t pixel_bit_depth,
+              const char* artist,
+              const char* copyright,
+              const char* make,
+              const char* model,
+              const char* software,
+              const char* image_desc,
+              const char* ext_metadata_name,
+              const char* ext_metadata,
+              bool strict,
+              const char* output_path,
+              const void* const buffer)
 {
   uint32_t k;
   int retval = 0;
-  const void *buf;
+  void *buf;
 
   CTIFF ctiff = CTIFFNewFile(output_path);
   CTIFFSetPageStyle(ctiff, width, height, pixel_bit_depth, CTIFF_PIXEL_UINT, false, 72, 72);
@@ -508,22 +486,22 @@ int tiffWrite( uint32_t width,
   CTIFFSetBasicMeta(ctiff,
                     artist, copyright, make, model, software, image_desc);
 
-  CTIFFWriteImmediately(ctiff, true);
 
   for (k = 0; k < pages; k++){
-    buf = buffer;
-    /*buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);*/
+    printf("Adding image %d\n", k);
+    buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
     if ((retval = CTIFFAddPage(ctiff, "Apollo", "{\"Hi\":1}", buf)) != 0){
+      printf("Could not add image\n");
       __CTIFFFreeFile(ctiff);
       return retval;
     }
   }
 
-  printf("6\n");
+  printf("Writing File\n");
   retval = CTIFFWriteFile(ctiff);
 
-  printf("7\n");
+  printf("Closing File\n");
   CTIFFCloseFile(ctiff);
 
   return retval;

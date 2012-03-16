@@ -19,8 +19,8 @@
 // Example on how to use the library
 int main(void)
 {
-  unsigned int width = 2;
-  unsigned int height = 3;
+  unsigned int width = 1024;
+  unsigned int height = 768;
   unsigned int pages = 4;
   unsigned int pixel_bit_depth = 16;
   void* buffer;

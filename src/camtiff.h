@@ -148,7 +148,7 @@ typedef struct CTIFF_dir_s {
                const char *timestamp;
                const void *data;
        struct CTIFF_dir_s *next_dir;
-  int           (*WriteDir)(TIFF*);
+                      int  refs;
 } CTIFF_dir;
 
 typedef struct CTIFF_s {
@@ -157,6 +157,7 @@ typedef struct CTIFF_s {
   unsigned int  num_dirs;
   unsigned int  num_page_styles;
   bool          strict;
+  unsigned int  write_every_num;
 
   CTIFF_dir    *def_dir;
   CTIFF_dir    *first_dir;
