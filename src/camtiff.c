@@ -58,7 +58,7 @@ const char* __CTIFFGetTime()
   time(&local_current_time);
 
   retval = gmtime_s(&gmt_current_time, &local_current_time);
-  if (retval) {printf("Could not get UTC.\n"); return retval;}
+  /*if (retval) {printf("Could not get UTC.\n"); return retval;}*/
 
   strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", &gmt_current_time);
 #else
@@ -118,14 +118,18 @@ CTIFF CTIFFNewFile(const char* output_file)
   }
 
   // Set root level information
-  ctiff->output_file = output_file;
-  ctiff->num_dirs = 0;
+  ctiff->output_file     = output_file;
+  ctiff->num_dirs        = 0;
   ctiff->num_page_styles = 1;
-  ctiff->strict = true;
+  ctiff->strict          = true;
+
+  // Safer to write as soon as possible in case the image data disappears.
   ctiff->write_every_num = 1;
+  ctiff->num_unwritten   = 0;
 
   ctiff->first_dir = NULL;
-  ctiff->last_dir = NULL;
+  ctiff->last_dir  = NULL;
+  ctiff->write_ptr = NULL;
 
   // Set def dir def data pointers
   def_dir->timestamp = NULL;
@@ -312,7 +316,6 @@ int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
 
   // 1 on success, 0 on error
   if (TIFFWriteDirectory(tiff) != 1){
-    printf("Could not write dir to tiff.\n");
     return ECTIFFWRITEDIR;
   }
 
@@ -323,20 +326,30 @@ int CTIFFWriteFile(CTIFF ctiff)
 {
 
   int retval = 0;
-  CTIFF_dir *dir = ctiff->first_dir;
+  unsigned int *num_unwritten;
+  CTIFF_dir *dir, *prev_dir;
 
   if (ctiff == NULL) return ECTIFFNULL;
 
-  dir = ctiff->first_dir;
-
-  /*retval = __CTIFFWriteDir(ctiff->def_dir, ctiff->tiff, i++);*/
-  while (dir != NULL) {
-    if ((retval = __CTIFFWriteDir(dir, ctiff->tiff)) != 0)
-      printf("Failed on attempt to write dir\n");
-      /*return retval;*/
-    dir = dir->next_dir;
+  prev_dir = ctiff->write_ptr;
+  if (ctiff->write_ptr == NULL){
+    dir = ctiff->first_dir;
+  } else {
+    dir = ctiff->write_ptr->next_dir;
   }
 
+  num_unwritten = &ctiff->num_unwritten;
+
+  while (dir != NULL && *num_unwritten > 0) {
+    if ((retval = __CTIFFWriteDir(dir, ctiff->tiff)) != 0)
+      return retval;
+
+    prev_dir = dir;
+    dir = dir->next_dir;
+    (*num_unwritten)--;
+  }
+
+  ctiff->write_ptr = prev_dir;
   return 0;
 }
 
@@ -352,6 +365,7 @@ int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
   if (ctiff == NULL) return ECTIFFNULL;
   if (dir == NULL) return ECTIFFNULLDIR;
 
+
   if (ctiff->first_dir == NULL){
     ctiff->first_dir = dir;
   } else {
@@ -360,6 +374,12 @@ int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
 
   ctiff->last_dir = dir;
   dir->refs++;
+
+  ctiff->num_unwritten++;
+
+  if (ctiff->num_unwritten >= ctiff->write_every_num){
+    CTIFFWriteFile(ctiff);
+  }
 
   return 0;
 }
@@ -483,10 +503,11 @@ int tiffWrite(uint32_t width,
   CTIFFSetBasicMeta(ctiff,
                     artist, copyright, make, model, software, image_desc);
 
+  CTIFFWriteEvery(ctiff, 2);
 
   for (k = 0; k < pages; k++){
-    printf("Adding image %d\n", k);
-    sprintf(ext, "{\"data\":%d}", k);
+    printf("Adding image %d\n", k+1);
+    sprintf(ext, "{\"data\":%d}", k+1);
     buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
     if ((retval = CTIFFAddNewPage(ctiff, "Apollo", ext, buf)) != 0){

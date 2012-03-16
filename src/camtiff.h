@@ -158,10 +158,12 @@ typedef struct CTIFF_s {
   unsigned int  num_page_styles;
   bool          strict;
   unsigned int  write_every_num;
+  unsigned int  num_unwritten;
 
   CTIFF_dir    *def_dir;
   CTIFF_dir    *first_dir;
   CTIFF_dir    *last_dir;
+  CTIFF_dir    *write_ptr;
 } * CTIFF;
 
 #endif // end CTIFF header lock
