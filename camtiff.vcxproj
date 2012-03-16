@@ -12,9 +12,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camtiff.h" />
+    <ClInclude Include="src\json_validate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\camtiff.c" />
+    <ClCompile Include="src\json_validate.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>

@@ -7,6 +7,10 @@
 *.opensdf
 *.tiff
 *.tif
+*.obj
+*.ilk
+*.pdb
+*.exp
 
 bin/*
 

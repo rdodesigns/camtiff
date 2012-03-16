@@ -23,12 +23,25 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>  // uints
-#include <tiffio.h>  // libTIFF (preferably 3.9.5+)
-#include <stdbool.h> // bool type
+// Header Lock
+#ifndef CTIFF_HEADER
+#define CTIFF_HEADER
 
 #if defined(WIN32) && !defined(__WIN32)
 #define __WIN32
+#endif
+
+#include <stdint.h>  // uints
+#include <tiffio.h>  // libTIFF (preferably 3.9.5+)
+//#include "CTIFF_error.h"
+
+#ifdef __WIN32
+  #define bool	BOOL
+  #define true	1
+  #define false 0
+  #define __bool_true_false_are_defined   1
+#else
+  #include <stdbool.h> // bool type
 #endif
 
 // Windows corrections
@@ -38,15 +51,34 @@
 #endif
 
 // Version info
-#define CAMTIFF_VERSION 1
+#define CTIFF_MAJOR_VERSION 0
+#define CTIFF_MINOR_VERSION 0
+#define CTIFF_MAINT_VERSION 0
+
 
 // Error Codes
-#define EWRITEDIR  1
-#define EMALLOC    2
-#define ETIFFOPEN  3
-#define ETIFFWRITE 4
-#define EBITDEPTH  5
-#define EPAGEZERO  6
+enum ERROR {
+  ECTIFFNULL=1,
+  ECTIFFNULLDIR,
+  ECTIFFOPEN,
+  ECTIFFPIXELTYPE,
+  ECTIFFINVALIDEXTMETA,
+  ECTIFFWRITE,
+  ECTIFFWRITEDIR,
+  ECTIFFWRITESTRIP,
+  ECTIFFLAST
+};
+
+enum pixel_type {
+  CTIFF_PIXEL_UINT = 1,
+  CTIFF_PIXEL_INT,
+  CTIFF_PIXEL_FLOAT,
+  CTIFF_PIXEL_UNKNOWN,
+  CTIFF_PIXEL_COMPLEXINT,
+  CTIFF_PIXEL_COMPLEXFLOAT
+};
+
+#define FREE(p)    do { free((void*) (p)); (p) = NULL; } while(0)
 
 #if defined(LIB) && defined(__WIN32)
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -64,62 +96,71 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	}
 	return TRUE;
 }
-
-extern __declspec(dllexport)
-int tiffWrite(uint32_t width, uint32_t height,
-              uint32_t pages, uint8_t pixel_bit_depth,
-              const char* artist, const char* copyright, const char* make,
-              const char* model, const char* software, const char* image_desc,
-              const char* ext_metadata, bool strict,
-              const char* output_path, const void* const buffer);
+#else
+#define __declspec(dllexport)
 #endif
+extern __declspec(dllexport)
+int tiffWrite( uint32_t width,
+               uint32_t height,
+               uint32_t pages,
+               uint8_t pixel_bit_depth,
+               const char* artist,
+               const char* copyright,
+               const char* make,
+               const char* model,
+               const char* software,
+               const char* image_desc,
+               const char* ext_metadata_name,
+               const char* ext_metadata,
+               bool strict,
+               const char* output_path,
+               const void* const buffer );
 
-// TODO: Fill out metadata struct
-struct basic_metadata {
-  const char* artist;
-  const char* copyright;
-  const char* make;
-  const char* model;
-  const char* software;
-  const char* image_desc;
-};
+typedef struct {
+  const char *artist;
+  const char *copyright;
+  const char *make;
+  const char *model;
+  const char *software;
+  const char *image_desc;
+} CTIFF_basic_metadata;
 
-//struct ext_metadata {
+typedef struct {
+  const char   *data;
+  const char   *white_space;
+} CTIFF_extended_metadata;
 
-//};
+typedef struct CTIFF_dir_style_s {
+  unsigned  int width;
+  unsigned  int height;
+  unsigned  int bps;
+  unsigned char pixel_data_type;
+           bool in_color;
+           bool black_is_min;
+  unsigned  int x_resolution;
+  unsigned  int y_resolution;
+} CTIFF_dir_style;
 
-struct stack {
-  uint32_t width;
-  uint32_t height;
-  uint32_t pages;
-  uint8_t pixel_bit_depth;
-  struct basic_metadata b_meta;
-  void* buffer;
-};
+typedef struct CTIFF_dir_s {
+          CTIFF_dir_style  style;
+     CTIFF_basic_metadata  basic_meta;
+  CTIFF_extended_metadata  ext_meta;
+               const char *timestamp;
+               const void *data;
+       struct CTIFF_dir_s *next_dir;
+  int           (*WriteDir)(TIFF*);
+} CTIFF_dir;
 
-struct page {
-  uint32_t width;
-  uint32_t height;
-  uint8_t pixel_bit_depth;
-  struct basic_metadata b_meta;
-  const void* buffer;
-};
+typedef struct CTIFF_s {
+  TIFF         *tiff;
+  const char   *output_file;
+  unsigned int  num_dirs;
+  unsigned int  num_page_styles;
+  bool          strict;
 
+  CTIFF_dir    *def_dir;
+  CTIFF_dir    *first_dir;
+  CTIFF_dir    *last_dir;
+} * CTIFF;
 
-// TODO: Fill out image struct
-struct image {
-  TIFF* tiff;
-  struct stack stack;
-  struct basic_metadata meta;
-};
-
-int writeSubFile(TIFF *image, struct page page, struct basic_metadata b_meta,
-                 const char* ext_meta, bool strict);
-
-int tiffWrite(uint32_t width, uint32_t height,
-              uint32_t pages, uint8_t pixel_bit_depth,
-              const char* artist, const char* copyright, const char* make,
-              const char* model, const char* software, const char* image_desc,
-              const char* ext_metadata, bool strict,
-              const char* output_path, const void* const buffer);
-
+#endif // end CTIFF header lock

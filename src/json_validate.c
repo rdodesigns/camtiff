@@ -400,9 +400,9 @@ JSON_checker_done(JSON_checker jc)
     return result;
 }
 
-int validateJSON(const char* json)
+int _CTIFFIsValidJSON(const char* json)
 {
-  int retval = 0;
+  int retval = 1;
   char *pt = json;
   JSON_checker jc = new_JSON_checker(20);
 
@@ -412,12 +412,12 @@ int validateJSON(const char* json)
       break;
     }
     if (!JSON_checker_char(jc, next_char)) {
-      return 1;
+      return 0;
     }
   } while (*(pt++) != '\0');
 
   if (!JSON_checker_done(jc)) {
-    return 2;
+    return 0;
   }
 
   return retval;

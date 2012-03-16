@@ -8,7 +8,4 @@ typedef struct JSON_checker_struct {
 } * JSON_checker;
 
 
-extern JSON_checker new_JSON_checker(int depth);
-extern int  JSON_checker_char(JSON_checker jc, int next_char);
-extern int  JSON_checker_done(JSON_checker jc);
-int validateJSON(const char* json);
+int _CTIFFIsValidJSON(const char* json);
