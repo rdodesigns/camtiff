@@ -166,4 +166,28 @@ typedef struct CTIFF_s {
   CTIFF_dir    *write_ptr;
 } * CTIFF;
 
+CTIFF CTIFFNewFile(const char* output_file);
+int CTIFFSetPageStyle(CTIFF ctiff,
+                      unsigned  int width,
+                      unsigned  int height,
+                      unsigned  int bps,
+                      unsigned char pixel_data_type,
+                               bool in_color,
+                      unsigned  int x_resolution,
+                      unsigned  int y_resolution);
+
+int CTIFFSetBasicMeta(CTIFF ctiff,
+                      const void *artist,
+                      const void *copyright,
+                      const void *make,
+                      const void *model,
+                      const void *software,
+                      const void *image_desc);
+
+int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
+                 const void* page);
+
+int CTIFFWriteFile(CTIFF ctiff);
+int CTIFFCloseFile(CTIFF ctiff);
+
 #endif // end CTIFF header lock

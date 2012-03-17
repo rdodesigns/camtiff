@@ -503,8 +503,6 @@ int tiffWrite(uint32_t width,
   CTIFFSetBasicMeta(ctiff,
                     artist, copyright, make, model, software, image_desc);
 
-  CTIFFWriteEvery(ctiff, 2);
-
   for (k = 0; k < pages; k++){
     printf("Adding image %d\n", k+1);
     sprintf(ext, "{\"data\":%d}", k+1);
@@ -512,7 +510,7 @@ int tiffWrite(uint32_t width,
 
     if ((retval = CTIFFAddNewPage(ctiff, "Apollo", ext, buf)) != 0){
       printf("Could not add image\n");
-      __CTIFFFreeFile(ctiff);
+      CTIFFCloseFile(ctiff);
       return retval;
     }
   }
