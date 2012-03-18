@@ -26,6 +26,30 @@
 
 #define CTIFF_TYPES_H
 
+//      Pixel size = (pixel_type & 0x0F)<<3
+// TIFF Pixel type = (pixel_type >> 4) & 0x0F
+enum pixel_type {
+//SAMPLEFORMAT_UINT          = 1,
+  CTIFF_PIXEL_UINT8          = 0x11,
+  CTIFF_PIXEL_UINT16         = 0x12,
+  CTIFF_PIXEL_UINT32         = 0x14,
+//SAMPLEFORMAT_INT           = 2,
+  CTIFF_PIXEL_INT8           = 0x21,
+  CTIFF_PIXEL_INT16          = 0x22,
+  CTIFF_PIXEL_INT32          = 0x24,
+//SAMPLEFORMAT_IEEEFP        = 3
+  CTIFF_PIXEL_FLOAT32        = 0x34,
+  CTIFF_PIXEL_FLOAT64        = 0x38,
+//SAMPLEFORMAT_VOID          = 4,    // Does not reflect real life signals
+//SAMPLEFORMAT_COMPLEXINT    = 5,
+  CTIFF_PIXEL_COMPLEXINT8    = 0x51,
+  CTIFF_PIXEL_COMPLEXINT16   = 0x52,
+  CTIFF_PIXEL_COMPLEXINT32   = 0x54,
+//SAMPLEFORMAT_COMPLEXIEEEFP = 6,
+  CTIFF_PIXEL_COMPLEXFLOAT32 = 0x64,
+  CTIFF_PIXEL_COMPLEXFLOAT64 = 0x68
+};
+
 typedef struct {
   const char *artist;
   const char *copyright;
