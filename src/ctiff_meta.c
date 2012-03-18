@@ -1,35 +1,37 @@
-/* JSON_checker.c */
-
-/* 2007-08-24 */
-
-/*
-Copyright (c) 2005 JSON.org
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-The Software shall be used for Good, not Evil.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
+/* ctiff_meta.c - A TIFF image writing library for spectroscopic data.
+ *
+ * Created by Ryan Orendorff <ro265@cam.ac.uk>
+ * Date: 18/03/12 16:55:19
+ *
+ * The Laser Analytics Tiff Writer University of Cambridge (camtiff) is a
+ * library designed to, given an input 16 bit 3D array and some additional
+ * comments, produce a TIFF image stack. It is designed to work with a piece
+ * of LabVIEW software within the Laser Analytics group codenamed Apollo, a
+ * front end for acquiring spectroscopic images.
+ *
+ * 2007-08-24
+ * Copyright (c) 2005 JSON.org
+ *
+ *
+ * Copyright (GPL V3):
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "json_validate.h"
+#include "ctiff_meta.h"
 
 #define true  1
 #define false 0
@@ -40,6 +42,35 @@ SOFTWARE.
     Characters are mapped into these 31 character classes. This allows for
     a significant reduction in the size of the state transition table.
 */
+
+const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
+                                      const char* ext_meta)
+{
+  char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
+  const char* tar_ext_meta;
+  char  buf_ext[strlen(ext_meta) + strlen(name)+2];
+  char *def_head = "{\"CamTIFF_Version\":\"%d.%d.%d%s\","
+                          "\"strict\":%s%s}";
+
+  if (name != NULL && strlen(name) != 0 &&
+      ext_meta != NULL && strlen(ext_meta) != 0 &&
+      (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta)) != NULL ){
+    sprintf(buf_ext, ",\"%s\":%s", name, tar_ext_meta);
+    FREE(tar_ext_meta);
+  } else {
+    sprintf(buf_ext, "%s", "");
+  }
+
+  sprintf(buf,def_head,
+              CTIFF_MAJOR_VERSION,
+              CTIFF_MINOR_VERSION,
+              CTIFF_MAINT_VERSION,
+              CTIFF_TESTING_VERSION,
+              strict ? "true" : "false",
+              buf_ext);
+
+  return buf;
+}
 
 enum classes {
     C_SPACE,  /* space */

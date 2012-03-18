@@ -1,4 +1,4 @@
-/* camtiff.h - A TIFF image writing library for spectroscopic data.  This file
+/* ctiff.h - A TIFF image writing library for spectroscopic data.  This file
  * is part of camtiff.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 28/10/11 21:00:27
@@ -24,8 +24,8 @@
  */
 
 // Header Lock
-#ifndef CTIFF_HEADER
-#define CTIFF_HEADER
+#ifndef CTIFF_H
+#define CTIFF_H
 
 #if defined(WIN32) && !defined(__WIN32)
 #define __WIN32
@@ -58,18 +58,6 @@
 #define CTIFF_TESTING_VERSION "a0"
 
 
-// Error Codes
-enum ERROR {
-  ECTIFFNULL=1,
-  ECTIFFNULLDIR,
-  ECTIFFOPEN,
-  ECTIFFPIXELTYPE,
-  ECTIFFINVALIDEXTMETA,
-  ECTIFFWRITE,
-  ECTIFFWRITEDIR,
-  ECTIFFWRITESTRIP,
-  ECTIFFLAST
-};
 
 enum pixel_type {
   CTIFF_PIXEL_UINT = 1,
@@ -80,7 +68,6 @@ enum pixel_type {
   CTIFF_PIXEL_COMPLEXFLOAT
 };
 
-#define FREE(p)    do { free((void*) (p)); (p) = NULL; } while(0)
 
 #if defined(LIB) && defined(__WIN32)
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -119,78 +106,5 @@ int tiffWrite( uint32_t width,
                const char* output_path,
                const void* const buffer );
 
-typedef struct {
-  const char *artist;
-  const char *copyright;
-  const char *make;
-  const char *model;
-  const char *software;
-  const char *image_desc;
-} CTIFF_basic_metadata;
-
-typedef struct {
-  const char   *data;
-  const char   *white_space;
-} CTIFF_extended_metadata;
-
-typedef struct CTIFF_dir_style_s {
-  unsigned  int width;
-  unsigned  int height;
-  unsigned  int bps;
-  unsigned char pixel_data_type;
-           bool in_color;
-           bool black_is_min;
-  unsigned  int x_resolution;
-  unsigned  int y_resolution;
-} CTIFF_dir_style;
-
-typedef struct CTIFF_dir_s {
-          CTIFF_dir_style  style;
-     CTIFF_basic_metadata  basic_meta;
-  CTIFF_extended_metadata  ext_meta;
-               const char *timestamp;
-               const void *data;
-       struct CTIFF_dir_s *next_dir;
-                      int  refs;
-} CTIFF_dir;
-
-typedef struct CTIFF_s {
-  TIFF         *tiff;
-  const char   *output_file;
-  unsigned int  num_dirs;
-  unsigned int  num_page_styles;
-  bool          strict;
-  unsigned int  write_every_num;
-  unsigned int  num_unwritten;
-
-  CTIFF_dir    *def_dir;
-  CTIFF_dir    *first_dir;
-  CTIFF_dir    *last_dir;
-  CTIFF_dir    *write_ptr;
-} * CTIFF;
-
-CTIFF CTIFFNewFile(const char* output_file);
-int CTIFFSetPageStyle(CTIFF ctiff,
-                      unsigned  int width,
-                      unsigned  int height,
-                      unsigned  int bps,
-                      unsigned char pixel_data_type,
-                               bool in_color,
-                      unsigned  int x_resolution,
-                      unsigned  int y_resolution);
-
-int CTIFFSetBasicMeta(CTIFF ctiff,
-                      const void *artist,
-                      const void *copyright,
-                      const void *make,
-                      const void *model,
-                      const void *software,
-                      const void *image_desc);
-
-int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
-                 const void* page);
-
-int CTIFFWriteFile(CTIFF ctiff);
-int CTIFFCloseFile(CTIFF ctiff);
 
 #endif // end CTIFF header lock
