@@ -79,7 +79,7 @@ const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
   char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
   const char* tar_ext_meta;
   char  buf_ext[strlen(ext_meta) + strlen(name)+2];
-  char *def_head = "{\"CamTIFF_Version\":\"%d.%d.%d\","
+  char *def_head = "{\"CamTIFF_Version\":\"%d.%d.%d%s\","
                           "\"strict\":%s%s}";
 
   if (name != NULL && strlen(name) != 0 &&
@@ -95,6 +95,7 @@ const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
               CTIFF_MAJOR_VERSION,
               CTIFF_MINOR_VERSION,
               CTIFF_MAINT_VERSION,
+              CTIFF_TESTING_VERSION,
               strict ? "true" : "false",
               buf_ext);
 
@@ -482,6 +483,7 @@ int tiffWrite(uint32_t width,
               uint32_t height,
               uint32_t pages,
               uint8_t pixel_bit_depth,
+              unsigned int pixel_type,
               const char* artist,
               const char* copyright,
               const char* make,
@@ -496,35 +498,26 @@ int tiffWrite(uint32_t width,
 {
   uint32_t k;
   int retval = 0;
-  char ext[64];
   const void *buf;
 
   CTIFF ctiff = CTIFFNewFile(output_path);
-  CTIFFSetPageStyle(ctiff, width, height, pixel_bit_depth, CTIFF_PIXEL_UINT, false, 72, 72);
+  CTIFFSetPageStyle(ctiff, width, height, pixel_bit_depth, pixel_type, false, 72, 72);
 
   CTIFFSetBasicMeta(ctiff,
                     artist, copyright, make, model, software, image_desc);
 
   for (k = 0; k < pages; k++){
-    printf("Adding image %d\n", k+1);
-    if (k != 3) {
-      sprintf(ext, "{\"data space key\":\n\r\t%d         }", k+1);
-    } else {
-      sprintf(ext, "{\"data\"%d         }", k+1);
-    }
     buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
-    if ((retval = CTIFFAddNewPage(ctiff, "Apollo", ext, buf)) != 0){
+    if ((retval = CTIFFAddNewPage(ctiff, ext_metadata_name, ext_metadata, buf)) != 0){
       printf("Could not add image\n");
       CTIFFCloseFile(ctiff);
       return retval;
     }
   }
 
-  printf("Writing File\n");
   retval = CTIFFWriteFile(ctiff);
 
-  printf("Closing File\n");
   CTIFFCloseFile(ctiff);
 
   return retval;

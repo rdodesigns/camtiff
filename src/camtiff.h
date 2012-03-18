@@ -52,8 +52,10 @@
 
 // Version info
 #define CTIFF_MAJOR_VERSION 0
-#define CTIFF_MINOR_VERSION 0
+#define CTIFF_MINOR_VERSION 1
 #define CTIFF_MAINT_VERSION 0
+
+#define CTIFF_TESTING_VERSION "a0"
 
 
 // Error Codes
@@ -104,6 +106,7 @@ int tiffWrite( uint32_t width,
                uint32_t height,
                uint32_t pages,
                uint8_t pixel_bit_depth,
+               unsigned int pixel_type,
                const char* artist,
                const char* copyright,
                const char* make,

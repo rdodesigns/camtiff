@@ -32,7 +32,7 @@ int main(void)
   char* model = "Camera Model";
   char* software = "Software";
   char* image_desc = "Created through include statements.";
-  char* metadata = "{\"Hi\": 1};{\"Hi\": 2};{\"Hi\": 3};{\"Hi\" 4}";
+  char* metadata = "{\"Hi\": 1}";
 
   // Uses global tiffWritePtr, which either points to tiffWrite from a
   // linked file or from a dynamic library.
@@ -42,7 +42,7 @@ int main(void)
           "Could not calclate buffer.")
   DEBUGP("Calculated buffer.")
 
-  TRYFUNC(tiffWrite(width, height, pages, pixel_bit_depth,
+  TRYFUNC(tiffWrite(width, height, pages, pixel_bit_depth, CTIFF_PIXEL_UINT,
                     artist, copyright, make, model,
                     software, image_desc, "example", metadata, true,
                     output_path, buffer),
