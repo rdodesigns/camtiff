@@ -74,17 +74,19 @@ const char* __CTIFFGetTime()
 }
 
 const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
-                                      const char* ext_meta_str)
+                                      const char* ext_meta)
 {
-  char *buf = (char*) malloc(128 + strlen(ext_meta_str) + strlen(name));
-  char  buf_ext[strlen(ext_meta_str) + strlen(name)+2];
+  char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
+  const char* tar_ext_meta;
+  char  buf_ext[strlen(ext_meta) + strlen(name)+2];
   char *def_head = "{\"CamTIFF_Version\":\"%d.%d.%d\","
                           "\"strict\":%s%s}";
 
   if (name != NULL && strlen(name) != 0 &&
-      ext_meta_str != NULL && strlen(ext_meta_str) != 0 &&
-      _CTIFFIsValidJSON(ext_meta_str)){
-    sprintf(buf_ext, ",\"%s\":%s", name, ext_meta_str);
+      ext_meta != NULL && strlen(ext_meta) != 0 &&
+      (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta)) != NULL ){
+    sprintf(buf_ext, ",\"%s\":%s", name, tar_ext_meta);
+    FREE(tar_ext_meta);
   } else {
     sprintf(buf_ext, "%s", "");
   }
@@ -505,7 +507,11 @@ int tiffWrite(uint32_t width,
 
   for (k = 0; k < pages; k++){
     printf("Adding image %d\n", k+1);
-    sprintf(ext, "{\"data\":%d}", k+1);
+    if (k != 3) {
+      sprintf(ext, "{\"data space key\":\n\r\t%d         }", k+1);
+    } else {
+      sprintf(ext, "{\"data\"%d         }", k+1);
+    }
     buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
     if ((retval = CTIFFAddNewPage(ctiff, "Apollo", ext, buf)) != 0){

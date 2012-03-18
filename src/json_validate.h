@@ -8,4 +8,5 @@ typedef struct JSON_checker_struct {
 } * JSON_checker;
 
 
-int _CTIFFIsValidJSON(const char* json);
+int __CTIFFIsValidJSON(const char* json);
+const char* __CTIFFTarValidExtMeta(const char* json);

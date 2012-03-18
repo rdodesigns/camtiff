@@ -28,12 +28,14 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "json_validate.h"
 
 #define true  1
 #define false 0
 #define __   -1     /* the universal error code */
 
+#define FREE(p)    do { free((void*) (p)); (p) = NULL;} while(0)
 /*
     Characters are mapped into these 31 character classes. This allows for
     a significant reduction in the size of the state transition table.
@@ -98,7 +100,7 @@ static int ascii_class[128] = {
     C_ETC,   C_LOW_A, C_LOW_B, C_LOW_C, C_LOW_D, C_LOW_E, C_LOW_F, C_ETC,
     C_ETC,   C_ETC,   C_ETC,   C_ETC,   C_LOW_L, C_ETC,   C_LOW_N, C_ETC,
     C_ETC,   C_ETC,   C_LOW_R, C_LOW_S, C_LOW_T, C_LOW_U, C_ETC,   C_ETC,
-    C_ETC,   C_ETC,   C_ETC,   C_LCURB, C_ETC,   C_RCURB, C_ETC,   C_ETC
+    C_ETC,   C_ETC,   C_ETC,   C_LCURB, C_ETC,   C_RCURB, C_ETC,   __
 };
 
 
@@ -259,7 +261,7 @@ new_JSON_checker(int depth)
 }
 
 
-int
+char
 JSON_checker_char(JSON_checker jc, int next_char)
 {
 /*
@@ -268,6 +270,7 @@ JSON_checker_char(JSON_checker jc, int next_char)
     UTF-32. It returns true if things are looking ok so far. If it rejects the
     text, it deletes the JSON_checker object and returns false.
 */
+    int retchar = next_char;
     int next_class, next_state;
 /*
     Determine the character's class.
@@ -291,6 +294,9 @@ JSON_checker_char(JSON_checker jc, int next_char)
 /*
     Change the state.
 */
+        if (!(next_state == ST || next_state == KE) &&
+             (next_class == C_SPACE || next_class == C_WHITE))
+          retchar = -1;
         jc->state = next_state;
     } else {
 /*
@@ -382,7 +388,7 @@ JSON_checker_char(JSON_checker jc, int next_char)
             return reject(jc);
         }
     }
-    return true;
+    return retchar;
 }
 
 
@@ -400,10 +406,10 @@ JSON_checker_done(JSON_checker jc)
     return result;
 }
 
-int _CTIFFIsValidJSON(const char* json)
+int __CTIFFIsValidJSON(const char* json)
 {
   int retval = 1;
-  char *pt = json;
+  const char *pt = json;
   JSON_checker jc = new_JSON_checker(20);
 
   do {
@@ -421,4 +427,34 @@ int _CTIFFIsValidJSON(const char* json)
   }
 
   return retval;
+}
+
+const char* __CTIFFTarValidExtMeta(const char* json)
+{
+  char* ret = (char*) malloc(sizeof(char)*(strlen(json)+1));
+  char* buf = ret;
+  char tmp_char;
+  const char *pt = json;
+  JSON_checker jc = new_JSON_checker(20);
+
+  do {
+    char next_char = *pt;
+    if (next_char <= 0) {
+      break;
+    }
+    if (!(tmp_char = JSON_checker_char(jc, next_char))) {
+      FREE(ret);
+      return NULL;
+    }
+    if (tmp_char != -1) *buf++ = tmp_char;
+
+  } while (*(pt++) != '\0');
+
+  if (!JSON_checker_done(jc)) {
+    FREE(ret);
+    return NULL;
+  }
+
+  *buf = '\0';
+  return ret;
 }
