@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 PLATFORM="`uname`"
 
@@ -23,12 +23,28 @@ fi
 ## Comment out to compile release version.
 DEBUG='-DDEBUG'
 
+SOURCE=(ctiff_data\
+        ctiff_io\
+        ctiff_meta\
+        ctiff_settings\
+        ctiff_util\
+        ctiff_write)
+
+## Mac and Linux have different include paths
+INCLUDES=''
+LIBRARY=''
+
+if [ "$PLATFORM" = "Darwin" ]; then
+  INCLUDES='-I/opt/local/include'
+  LIBRARY='-L/opt/local/lib'
+fi
+
 ## Dynamic library version
 if [ "$1" = "lib" ]; then
-  if [ -f bin/camtiff.o ]; then rm bin/camtiff.o
+  if [ -f bin/ctiff.o ]; then rm bin/ctiff.o
     fi
 
-  if [ -f bin/camtiff.so ]; then rm bin/camtiff.so
+  if [ -f bin/libctiff.so.0 ]; then rm bin/libctiff.so.0
     fi
 
   if [ -f bin/tiff_write_dyn ]; then rm bin/tiff_write_dyn
@@ -36,20 +52,20 @@ if [ "$1" = "lib" ]; then
 
   echo "Compiling dynamic library version."
 
-  if [ "$PLATFORM" = "Darwin" ]; then
-    clang -c -fpic -o bin/camtiff.o src/camtiff.c -Wall -Wextra \
-      -I/opt/local/include -O3
-    clang -shared -lc -o bin/camtiff.so bin/camtiff.o -L/opt/local/lib -ltiff
-    clang -o bin/tiff_write_dyn \
-      examples/tiff_example_dyn_unix.c examples/error.c examples/buffer.c \
-      -ldl -ltiff -Lbin/ -L/opt/local/lib $DEBUG -DLIB -Wall -Wextra -O3
-  elif [ "$PLATFORM" = "Linux" ]; then
-    clang -c -fpic -o bin/camtiff.o src/camtiff.c -Wall -Wextra -O3
-    clang -shared -lc -o bin/camtiff.so bin/camtiff.o
-    clang -o bin/tiff_write_dyn \
-      examples/tiff_example_dyn_unix.c examples/error.c examples/buffer.c \
-      -ldl -ltiff -Lbin/ $DEBUG -DLIB -Wall -Wextra -O3
-  fi
+  for code in ${SOURCE[*]}
+  do
+    clang -c -fpic $INCLUDES -Wall $DDEBUG \
+      -o bin/$code.o src/$code.c
+  done
+
+  clang -shared -W1,-soname,libctiff.so.0 -lc $LIBRARY -ltiff \
+    -o bin/libctiff.so.0 bin/*.o
+
+  clang -ldl -lm -Lbin/ -DLIB -Wall $DDEBUG \
+    -o bin/tiff_write_dyn               \
+    examples/tiff_example_dyn_unix.c    \
+    examples/buffer.c                   \
+    examples/error.c
 
 # Include file version.
 else
@@ -58,16 +74,10 @@ else
 
   echo "Compiling static verson."
 
-  if [ "$PLATFORM" = "Darwin" ]; then
-    clang -obin/tiff_write_static \
-      examples/tiff_example_include.c \
-      examples/buffer.c examples/error.c \
-      src/*.c \
-      -ltiff -I/opt/local/include -L/opt/local/lib $DEBUG \
-      -Wall
-  elif [ "$PLATFORM" = "Linux" ]; then
-    clang -obin/tiff_write_static \
-      examples/tiff_example_include.c src/camtiff.c \
-      examples/buffer.c examples/error.c -ltiff $DEBUG -Wall -Wextra -O3
-  fi
+  clang -ltiff $INCLUDES $LIBRARY $DEBUG -Wall \
+    -obin/tiff_write_static                    \
+    examples/tiff_example_include.c            \
+    examples/buffer.c                          \
+    examples/error.c                           \
+    src/*.c
 fi
