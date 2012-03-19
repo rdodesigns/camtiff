@@ -89,5 +89,6 @@ extern int CTIFFSetPageStyle(CTIFF ctiff,
 extern int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
 extern int CTIFFWriteFile(CTIFF);
 extern int CTIFFCloseFile(CTIFF);
+extern void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
 
 #endif // end CTIFF header lock

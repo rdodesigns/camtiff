@@ -55,6 +55,7 @@ int main(void)
 
 
   CTIFF ctiff = CTIFFNewFile(output_path);
+  CTIFFWriteEvery(ctiff, 1);
   CTIFFSetPageStyle(ctiff, width, height, pixel_type, false, 72, 72);
 
   CTIFFSetBasicMeta(ctiff,
