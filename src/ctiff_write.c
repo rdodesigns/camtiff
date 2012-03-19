@@ -38,7 +38,7 @@ void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
 	                         strlen(ext_meta->white_space) + 1);
   sprintf(buf, "%s%s", ext_meta->data, ext_meta->white_space);
 
-  TIFFSetField(tiff, TIFFTAG_XMLPACKET, sizeof(buf), buf);
+  TIFFSetField(tiff, TIFFTAG_XMLPACKET, strlen(buf), buf);
   FREE(buf);
 }
 

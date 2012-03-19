@@ -29,7 +29,11 @@
 
 #include "ctiff_types.h"
 
-#if defined(LIB) && defined(__WIN32)
+#if defined(LIB) && defined(WIN32)
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -45,47 +49,48 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	}
 	return TRUE;
 }
-#define EXTERNFN extern __declspec(dllexport)
+
 #else
-#define EXTERNFN extern
 #endif
-EXTERNFN
-int tiffWrite( unsigned int width,
-               unsigned int height,
-               unsigned int pages,
-               unsigned int pixel_type,
-               const char* artist,
-               const char* copyright,
-               const char* make,
-               const char* model,
-               const char* software,
-               const char* image_desc,
-               const char* ext_metadata_name,
-               const char* ext_metadata,
-               bool strict,
-               const char* output_path,
-               const void* const buffer );
+
+extern int tiffWrite( unsigned int width,
+                      unsigned int height,
+                      unsigned int pages,
+                      unsigned int pixel_type,
+                      const char* artist,
+                      const char* copyright,
+                      const char* make,
+                      const char* model,
+                      const char* software,
+                      const char* image_desc,
+                      const char* ext_metadata_name,
+                      const char* ext_metadata,
+                      bool strict,
+                      const char* output_path,
+                      const void* const buffer );
 
 
-EXTERNFN CTIFF CTIFFNewFile(const char*);
-EXTERNFN int CTIFFCloseFile(CTIFF);
-EXTERNFN int CTIFFSetBasicMeta(CTIFF ctiff,
+extern CTIFF CTIFFNewFile(const char*);
+extern int CTIFFCloseFile(CTIFF);
+extern int CTIFFSetBasicMeta(CTIFF ctiff,
                       const char *artist,
                       const char *copyright,
                       const char *make,
                       const char *model,
                       const char *software,
                       const char *image_desc);
-EXTERNFN int CTIFFSetPageStyle(CTIFF ctiff,
+extern int CTIFFSetPageStyle(CTIFF ctiff,
                       unsigned  int width,
                       unsigned  int height,
                       unsigned  int pixel_type,
                                bool in_color,
                       unsigned  int x_resolution,
                       unsigned  int y_resolution);
-EXTERNFN int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
-EXTERNFN int CTIFFWriteFile(CTIFF);
-EXTERNFN int CTIFFCloseFile(CTIFF);
-EXTERNFN void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
+extern int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
+extern int CTIFFWriteFile(CTIFF);
+extern int CTIFFCloseFile(CTIFF);
+extern void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
+
+
 
 #endif // end CTIFF header lock

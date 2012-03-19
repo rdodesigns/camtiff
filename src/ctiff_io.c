@@ -34,6 +34,7 @@
 #include <string.h>  // memset
 #include <tiffio.h>  // libTIFF (preferably 3.9.5+)
 
+
 CTIFF CTIFFNewFile(const char* output_file)
 {
   CTIFF                      ctiff = (CTIFF) malloc(sizeof(struct CTIFF_s));
@@ -106,7 +107,6 @@ int CTIFFCloseFile(CTIFF ctiff)
 
   return 0;
 }
-
 
 int tiffWrite(unsigned int width,
               unsigned int height,
