@@ -45,8 +45,7 @@
   #include <stdbool.h> // bool type
 #endif
 
-#include <tiffio.h>
-
+struct tiff;
 
 //      Pixel size = ((pixel_type & 0x0F) + 0x01) << 3
 // TIFF Pixel type = (pixel_type >> 4) & 0x0F
@@ -106,7 +105,7 @@ typedef struct CTIFF_dir_s {
 } CTIFF_dir;
 
 typedef struct CTIFF_s {
-  TIFF         *tiff;
+  struct tiff  *tiff;
   const char   *output_file;
   unsigned int  num_dirs;
   unsigned int  num_page_styles;

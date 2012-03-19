@@ -29,8 +29,12 @@
 #define FREE(p)    do { free((void*) (p)); (p) = NULL; } while(0)
 #define RETNONZERO(f) if ((retval = (f)) == 0) return retval
 
-const void* moveArrayPtr(const void* const ptr,
-                                       unsigned int dist, unsigned int size);
+static inline const void* moveArrayPtr(const void* const ptr,
+                                       unsigned int dist, unsigned int size)
+{
+  return (void *) (((char *) ptr)+(dist*size/8));
+}
+
 const char* __CTIFFGetTime();
 
 #endif /* end of include guard: CTIFF_UTIL_H */

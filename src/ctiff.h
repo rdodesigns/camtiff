@@ -52,28 +52,41 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 #else
 #define __declspec(dllexport)
 #endif
-//extern __declspec(dllexport)
-extern int tiffWrite( unsigned int width,
-                      unsigned int height,
-                      unsigned int pages,
-                      unsigned int pixel_type,
-                      const char* artist,
-                      const char* copyright,
-                      const char* make,
-                      const char* model,
-                      const char* software,
-                      const char* image_desc,
-                      const char* ext_metadata_name,
-                      const char* ext_metadata,
-                      bool strict,
-                      const char* output_path,
-                      const void* const buffer );
+extern __declspec(dllexport)
+int tiffWrite( unsigned int width,
+               unsigned int height,
+               unsigned int pages,
+               unsigned int pixel_type,
+               const char* artist,
+               const char* copyright,
+               const char* make,
+               const char* model,
+               const char* software,
+               const char* image_desc,
+               const char* ext_metadata_name,
+               const char* ext_metadata,
+               bool strict,
+               const char* output_path,
+               const void* const buffer );
 
 
 extern CTIFF CTIFFNewFile(const char*);
 extern int CTIFFCloseFile(CTIFF);
-extern int CTIFFSetPageStyle(CTIFF, const char*, const char*, const char*, const char*, const char*, const char*);
-extern int CTIFFAddNewPage(CTIFF, const char*, const char*, void*);
+extern int CTIFFSetBasicMeta(CTIFF ctiff,
+                      const char *artist,
+                      const char *copyright,
+                      const char *make,
+                      const char *model,
+                      const char *software,
+                      const char *image_desc);
+extern int CTIFFSetPageStyle(CTIFF ctiff,
+                      unsigned  int width,
+                      unsigned  int height,
+                      unsigned  int pixel_type,
+                               bool in_color,
+                      unsigned  int x_resolution,
+                      unsigned  int y_resolution);
+extern int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
 extern int CTIFFWriteFile(CTIFF);
 extern int CTIFFCloseFile(CTIFF);
 

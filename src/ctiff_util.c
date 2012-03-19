@@ -27,11 +27,6 @@
 
 #include "ctiff_util.h"
 
-const void* moveArrayPtr(const void* const ptr,
-                                       unsigned int dist, unsigned int size)
-{
-  return (void *) (((char *) ptr)+(dist*size/8));
-}
 
 const char* __CTIFFGetTime()
 {

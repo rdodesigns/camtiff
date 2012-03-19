@@ -22,6 +22,8 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+
 #include "ctiff_settings.h"
 #include "ctiff_error.h"
 

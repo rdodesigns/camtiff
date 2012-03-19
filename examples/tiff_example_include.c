@@ -16,43 +16,73 @@
 #include "buffer.h"
 #include "error.h"
 
+const void* moveArrayPtr(const void* const ptr,
+                                       unsigned int dist, unsigned int size)
+{
+  return (void *) (((char *) ptr)+(dist*size/8));
+}
+
 // Example on how to use the library
 int main(void)
 {
   unsigned int width = 1024;
   unsigned int height = 768;
-  unsigned int pages = 4;
-  unsigned int pixel_bit_depth = 16;
+  unsigned int pages = 5;
+  unsigned int pixel_type = CTIFF_PIXEL_UINT16;
+  int pixel_bit_depth = ((pixel_type >> 4) + 0x01) << 3;
   void* buffer;
+  unsigned int k;
+  int retval = 0;
+  const void *buf;
 
-  char* output_path = "output.tif";
-  char* artist = "Artist";
-  char* copyright = "Copyright";
-  char* make = "Camera Manufacturer";
-  char* model = "Camera Model";
-  char* software = "Software";
-  char* image_desc = "Created through include statements.";
-  char* metadata = "{\"Hi\": 1}";
-
-  // Uses global tiffWritePtr, which either points to tiffWrite from a
-  // linked file or from a dynamic library.
-
-
-  CTIFF ctiff = CTIFFNewFile("o.tiff");
-  CTIFFCloseFile(ctiff);
+  char  *output_path    = "output.tif";
+  char  *artist         = "Artist";
+  char  *copyright      = "Copyright";
+  char  *make           = "Camera Manufacturer";
+  char  *model          = "Camera Model";
+  char  *software       = "Software";
+  char  *image_desc     = "Created through include statements.";
+  char   metadata[][80] = {"{\"key with spaces\": \r\n\t \"data with spaces 1\"}",
+                           "{\"numeric_data\": 1337 }",
+                           "{\"boolean data\": true}",
+                           "{\"array data\": [ [ 1, 2, 3], [4, 5, 6], [7, 8, 9]]}",
+                           "{\"bad json\" 42}"};
 
   TRYFUNC(calculateImageArrays(width, height, pages, pixel_bit_depth, &buffer),
           "Could not calclate buffer.")
   DEBUGP("Calculated buffer.")
 
-  TRYFUNC(tiffWrite(width, height, pages, CTIFF_PIXEL_UINT16,
-                    artist, copyright, make, model,
-                    software, image_desc, "example", metadata, true,
-                    output_path, buffer),
-          "Could not create tiff.")
+
+
+  CTIFF ctiff = CTIFFNewFile(output_path);
+  CTIFFSetPageStyle(ctiff, width, height, pixel_type, false, 72, 72);
+
+  CTIFFSetBasicMeta(ctiff,
+                    artist, copyright, make, model, software, image_desc);
+
+  for (k = 0; k < pages; k++){
+    buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
+
+    if ((retval = CTIFFAddNewPage(ctiff, software, metadata[k], buf)) != 0){
+      printf("Could not add image\n");
+      CTIFFCloseFile(ctiff);
+      return retval;
+    }
+  }
+
+  retval = CTIFFWriteFile(ctiff);
+  CTIFFCloseFile(ctiff);
   DEBUGP("Wrote TIFF.")
 
   destroyBuffer(buffer);
 
-  return 0;
+  return retval;
+
+
+  // Note that this self contained, non-malloc version also exists.
+  /*TRYFUNC(tiffWrite(width, height, pages, CTIFF_PIXEL_UINT16,*/
+                    /*artist, copyright, make, model,*/
+                    /*software, image_desc, "example", metadata, true,*/
+                    /*output_path, buffer),*/
+          /*"Could not create tiff.")*/
 }
