@@ -22,7 +22,13 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <tiffio.h>  // libTIFF (preferably 3.9.5+)
+#include <string.h>  // strlen
+
+#include "ctiff_types.h"
 #include "ctiff_write.h"
+#include "ctiff_util.h"
+#include "ctiff_error.h"
 
 void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
 {
@@ -99,7 +105,7 @@ int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
 int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
 {
   int retval = 0;
-  uint32_t i;
+  unsigned int i;
   unsigned int height, width, bps;
   const void *strip_buffer, *image;
 

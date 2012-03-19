@@ -38,5 +38,7 @@ typedef struct JSON_checker_struct {
 
 int __CTIFFIsValidJSON(const char* json);
 const char* __CTIFFTarValidExtMeta(const char* json);
+const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
+                                      const char* ext_meta);
 
 #endif /* end of include guard: CTIFF_META_H */

@@ -26,6 +26,8 @@
 
 #define CTIFF_WRITE_H
 
+#include "ctiff_types.h"
 
+int CTIFFWriteFile(CTIFF ctiff);
 
 #endif /* end of include guard: CTIFF_WRITE_H */

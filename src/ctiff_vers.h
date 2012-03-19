@@ -1,0 +1,6 @@
+// Version info
+#define CTIFF_MAJOR_VERSION 0
+#define CTIFF_MINOR_VERSION 1
+#define CTIFF_MAINT_VERSION 0
+
+#define CTIFF_TESTING_VERSION "a0"

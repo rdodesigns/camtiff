@@ -1,6 +1,6 @@
-/* ctiff_io.h - A TIFF image writing library for spectroscopic data.
+/* ctiff_data.h - A TIFF image writing library for spectroscopic data.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
+ * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
  *
  * The Laser Analytics Tiff Writer University of Cambridge (camtiff) is a
  * library designed to, given an input 16 bit 3D array and some additional
@@ -22,29 +22,15 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CTIFF_IO_H
+#ifndef CTIFF_DATA_H
 
-#define CTIFF_IO_H
+#define CTIFF_DATA_H
 
 #include "ctiff_types.h"
 
-CTIFF CTIFFNewFile(const char* output_file);
-int CTIFFCloseFile(CTIFF ctiff);
+int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
+                 const void* page);
+int __CTIFFFreeFile(CTIFF ctiff);
 
-int tiffWrite(unsigned int width,
-              unsigned int height,
-              unsigned int pages,
-              unsigned int pixel_type,
-              const char* artist,
-              const char* copyright,
-              const char* make,
-              const char* model,
-              const char* software,
-              const char* image_desc,
-              const char* ext_metadata_name,
-              const char* ext_metadata,
-              bool strict,
-              const char* output_path,
-              const void* const buffer);
 
-#endif /* end of include guard: CTIFF_IO_H */
+#endif /* end of include guard: CTIFF_DATA_H */

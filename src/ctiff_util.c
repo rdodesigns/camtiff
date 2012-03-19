@@ -22,10 +22,13 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <time.h>
+#include <stdlib.h> // malloc
+
 #include "ctiff_util.h"
 
-inline const void* moveArrayPtr(const void* const ptr,
-                                       unsigned int dist, uint8_t size)
+const void* moveArrayPtr(const void* const ptr,
+                                       unsigned int dist, unsigned int size)
 {
   return (void *) (((char *) ptr)+(dist*size/8));
 }

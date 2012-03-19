@@ -26,6 +26,27 @@
 
 #define CTIFF_SETTINGS_H
 
+#include "ctiff_types.h"
 
+void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
+
+
+void CTIFFSetStrict(CTIFF ctiff, bool strict);
+
+int CTIFFSetBasicMeta(CTIFF ctiff,
+                      const char *artist,
+                      const char *copyright,
+                      const char *make,
+                      const char *model,
+                      const char *software,
+                      const char *image_desc);
+
+int CTIFFSetPageStyle(CTIFF ctiff,
+                      unsigned  int width,
+                      unsigned  int height,
+                      unsigned  int pixel_type,
+                               bool in_color,
+                      unsigned  int x_resolution,
+                      unsigned  int y_resolution);
 
 #endif /* end of include guard: CTIFF_SETTINGS_H */

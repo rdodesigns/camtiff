@@ -28,49 +28,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "ctiff_meta.h"
+#include <stdio.h>  // sprintf
+#include <string.h> // memset
+#include <stdbool.h>
 
-#define true  1
-#define false 0
+#include "ctiff_meta.h"
+#include "ctiff_util.h"
+#include "ctiff_types.h"
+#include "ctiff_vers.h"
+
+const char *CTIFF_ext_head = "{\"CamTIFF_Version\":\"%d.%d.%d%s\","
+                             "\"strict\":%s%s}";
+
 #define __   -1     /* the universal error code */
 
-#define FREE(p)    do { free((void*) (p)); (p) = NULL;} while(0)
 /*
     Characters are mapped into these 31 character classes. This allows for
     a significant reduction in the size of the state transition table.
 */
 
-const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
-                                      const char* ext_meta)
-{
-  char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
-  const char* tar_ext_meta;
-  char  buf_ext[strlen(ext_meta) + strlen(name)+2];
-  char *def_head = "{\"CamTIFF_Version\":\"%d.%d.%d%s\","
-                          "\"strict\":%s%s}";
-
-  if (name != NULL && strlen(name) != 0 &&
-      ext_meta != NULL && strlen(ext_meta) != 0 &&
-      (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta)) != NULL ){
-    sprintf(buf_ext, ",\"%s\":%s", name, tar_ext_meta);
-    FREE(tar_ext_meta);
-  } else {
-    sprintf(buf_ext, "%s", "");
-  }
-
-  sprintf(buf,def_head,
-              CTIFF_MAJOR_VERSION,
-              CTIFF_MINOR_VERSION,
-              CTIFF_MAINT_VERSION,
-              CTIFF_TESTING_VERSION,
-              strict ? "true" : "false",
-              buf_ext);
-
-  return buf;
-}
 
 enum classes {
     C_SPACE,  /* space */
@@ -488,4 +465,31 @@ const char* __CTIFFTarValidExtMeta(const char* json)
 
   *buf = '\0';
   return ret;
+}
+
+const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
+                                      const char* ext_meta)
+{
+  char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
+  const char* tar_ext_meta;
+  char  buf_ext[strlen(ext_meta) + strlen(name)+2];
+
+  if (name != NULL && strlen(name) != 0 &&
+      ext_meta != NULL && strlen(ext_meta) != 0 &&
+      (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta)) != NULL ){
+    sprintf(buf_ext, ",\"%s\":%s", name, tar_ext_meta);
+    FREE(tar_ext_meta);
+  } else {
+    sprintf(buf_ext, "%s", "");
+  }
+
+  sprintf(buf,CTIFF_ext_head,
+              CTIFF_MAJOR_VERSION,
+              CTIFF_MINOR_VERSION,
+              CTIFF_MAINT_VERSION,
+              CTIFF_TESTING_VERSION,
+              strict ? "true" : "false",
+              buf_ext);
+
+  return buf;
 }

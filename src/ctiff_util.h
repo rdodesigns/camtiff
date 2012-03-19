@@ -26,9 +26,11 @@
 
 #define CTIFF_UTIL_H
 
-
 #define FREE(p)    do { free((void*) (p)); (p) = NULL; } while(0)
 #define RETNONZERO(f) if ((retval = (f)) == 0) return retval
 
+const void* moveArrayPtr(const void* const ptr,
+                                       unsigned int dist, unsigned int size);
+const char* __CTIFFGetTime();
 
 #endif /* end of include guard: CTIFF_UTIL_H */

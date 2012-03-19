@@ -12,7 +12,7 @@
   #include <windows.h>
 #endif
 
-#include "../src/camtiff.h"
+#include "../src/ctiff.h"
 #include "buffer.h"
 #include "error.h"
 
@@ -38,11 +38,14 @@ int main(void)
   // linked file or from a dynamic library.
 
 
+  CTIFF ctiff = CTIFFNewFile("o.tiff");
+  CTIFFCloseFile(ctiff);
+
   TRYFUNC(calculateImageArrays(width, height, pages, pixel_bit_depth, &buffer),
           "Could not calclate buffer.")
   DEBUGP("Calculated buffer.")
 
-  TRYFUNC(tiffWrite(width, height, pages, pixel_bit_depth, CTIFF_PIXEL_UINT,
+  TRYFUNC(tiffWrite(width, height, pages, CTIFF_PIXEL_UINT16,
                     artist, copyright, make, model,
                     software, image_desc, "example", metadata, true,
                     output_path, buffer),

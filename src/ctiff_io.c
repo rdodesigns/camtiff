@@ -23,14 +23,24 @@
  */
 
 #include "ctiff_io.h"
+#include "ctiff_types.h"
+#include "ctiff_util.h"
+#include "ctiff_error.h"
+#include "ctiff_settings.h"
+#include "ctiff_write.h"
+#include "ctiff_data.h"
+
+#include <stdlib.h>  // malloc
+#include <string.h>  // memset
+#include <tiffio.h>  // libTIFF (preferably 3.9.5+)
 
 CTIFF CTIFFNewFile(const char* output_file)
 {
   CTIFF                      ctiff = (CTIFF) malloc(sizeof(struct CTIFF_s));
-  CTIFF_dir*               def_dir = (CTIFF_dir*) malloc(sizeof(CTIFF_dir));
-  CTIFF_dir_style*           style = &def_dir->style;
-  CTIFF_basic_metadata*     b_meta = &def_dir->basic_meta;
-  CTIFF_extended_metadata*  e_meta = &def_dir->ext_meta;
+  CTIFF_dir               *def_dir = (CTIFF_dir*) malloc(sizeof(CTIFF_dir));
+  CTIFF_dir_style           *style = &def_dir->style;
+  CTIFF_basic_metadata     *b_meta = &def_dir->basic_meta;
+  CTIFF_extended_metadata  *e_meta = &def_dir->ext_meta;
 
   int  white_space_size = 4096;
   char *white_space = (char*) malloc(white_space_size);
@@ -67,11 +77,11 @@ CTIFF CTIFFNewFile(const char* output_file)
   style->y_resolution = 72;
 
   // Set basic metadata
-  b_meta->artist     = NULL;
-  b_meta->copyright  = NULL;
-  b_meta->make       = NULL;
-  b_meta->model      = NULL;
-  b_meta->software   = NULL;
+  b_meta->artist = NULL;
+  b_meta->copyright = NULL;
+  b_meta->make = NULL;
+  b_meta->model = NULL;
+  b_meta->software = NULL;
   b_meta->image_desc = NULL;
 
   // Set extended metadata
@@ -95,4 +105,49 @@ int CTIFFCloseFile(CTIFF ctiff)
   __CTIFFFreeFile(ctiff);
 
   return 0;
+}
+
+
+int tiffWrite(unsigned int width,
+              unsigned int height,
+              unsigned int pages,
+              unsigned int pixel_type,
+              const char* artist,
+              const char* copyright,
+              const char* make,
+              const char* model,
+              const char* software,
+              const char* image_desc,
+              const char* ext_metadata_name,
+              const char* ext_metadata,
+              bool strict,
+              const char* output_path,
+              const void* const buffer)
+{
+  unsigned int k;
+  int retval = 0;
+  const void *buf;
+  int pixel_bit_depth = ((pixel_type >> 4) + 0x01) << 3;
+
+  CTIFF ctiff = CTIFFNewFile(output_path);
+  CTIFFSetPageStyle(ctiff, width, height, pixel_type, false, 72, 72);
+
+  CTIFFSetBasicMeta(ctiff,
+                    artist, copyright, make, model, software, image_desc);
+
+  for (k = 0; k < pages; k++){
+    buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
+
+    if ((retval = CTIFFAddNewPage(ctiff, ext_metadata_name, ext_metadata, buf)) != 0){
+      printf("Could not add image\n");
+      CTIFFCloseFile(ctiff);
+      return retval;
+    }
+  }
+
+  retval = CTIFFWriteFile(ctiff);
+
+  CTIFFCloseFile(ctiff);
+
+  return retval;
 }

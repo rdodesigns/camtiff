@@ -23,6 +23,7 @@
  */
 
 #include "ctiff_settings.h"
+#include "ctiff_error.h"
 
 void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
 {
@@ -38,12 +39,12 @@ void CTIFFSetStrict(CTIFF ctiff, bool strict)
 }
 
 int CTIFFSetBasicMeta(CTIFF ctiff,
-                      const void *artist,
-                      const void *copyright,
-                      const void *make,
-                      const void *model,
-                      const void *software,
-                      const void *image_desc)
+                      const char *artist,
+                      const char *copyright,
+                      const char *make,
+                      const char *model,
+                      const char *software,
+                      const char *image_desc)
 {
   CTIFF_basic_metadata *basic_meta;
 
@@ -64,28 +65,30 @@ int CTIFFSetBasicMeta(CTIFF ctiff,
 int CTIFFSetPageStyle(CTIFF ctiff,
                       unsigned  int width,
                       unsigned  int height,
-                      unsigned  int bps,
-                      unsigned char pixel_data_type,
+                      unsigned  int pixel_type,
                                bool in_color,
                       unsigned  int x_resolution,
                       unsigned  int y_resolution)
 {
   CTIFF_dir_style* def_style;
+  unsigned char pixel_kind = (pixel_type >> 4) & 0x0F;
 
   if (ctiff == NULL) return ECTIFFNULL;
   def_style = &ctiff->def_dir->style;
 
   def_style->width        = width;
   def_style->height       = height;
-  def_style->bps          = bps;
+  def_style->bps          = ((pixel_type & 0x0F) + 0x01) << 3;
   def_style->in_color     = in_color;
   def_style->x_resolution = x_resolution;
   def_style->y_resolution = y_resolution;
 
-  if ((pixel_data_type >= ECTIFFLAST) || (pixel_data_type <= 0)){
+
+
+  if ((pixel_kind > CTIFF_PIXEL_TYPE_MAX) || (pixel_kind < CTIFF_PIXEL_TYPE_MIN)){
     return ECTIFFPIXELTYPE;
   }
-  def_style->pixel_data_type = pixel_data_type;
+  def_style->pixel_data_type = (char) (pixel_type >> 4) & 0x0F;
 
   return 0;
 }

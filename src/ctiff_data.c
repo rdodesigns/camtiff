@@ -1,4 +1,4 @@
-/* ctiff_types.c - A TIFF image writing library for spectroscopic data.
+/* ctiff_data.c - A TIFF image writing library for spectroscopic data.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
  *
@@ -22,8 +22,16 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ctiff_types.h"
+#include <stdlib.h> // malloc
+#include <string.h> // memcpy
 
+#include "ctiff_data.h"
+#include "ctiff_types.h"
+#include "ctiff_error.h"
+#include "ctiff_meta.h"
+#include "ctiff_util.h"
+#include "ctiff_write.h"
+#include "ctiff_vers.h"
 
 int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
 {
