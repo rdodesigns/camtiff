@@ -29,10 +29,6 @@
 
 #include "ctiff_types.h"
 
-#ifdef WIN32
-#define inline __inline // Microsoft, I hate you (uses C89).
-#endif
-
 #if defined(LIB) && defined(__WIN32)
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -49,10 +45,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	}
 	return TRUE;
 }
+#define EXTERNFN extern __declspec(dllexport)
 #else
-#define __declspec(dllexport)
+#define EXTERNFN extern
 #endif
-extern __declspec(dllexport)
+EXTERNFN
 int tiffWrite( unsigned int width,
                unsigned int height,
                unsigned int pages,
@@ -70,25 +67,25 @@ int tiffWrite( unsigned int width,
                const void* const buffer );
 
 
-extern CTIFF CTIFFNewFile(const char*);
-extern int CTIFFCloseFile(CTIFF);
-extern int CTIFFSetBasicMeta(CTIFF ctiff,
+EXTERNFN CTIFF CTIFFNewFile(const char*);
+EXTERNFN int CTIFFCloseFile(CTIFF);
+EXTERNFN int CTIFFSetBasicMeta(CTIFF ctiff,
                       const char *artist,
                       const char *copyright,
                       const char *make,
                       const char *model,
                       const char *software,
                       const char *image_desc);
-extern int CTIFFSetPageStyle(CTIFF ctiff,
+EXTERNFN int CTIFFSetPageStyle(CTIFF ctiff,
                       unsigned  int width,
                       unsigned  int height,
                       unsigned  int pixel_type,
                                bool in_color,
                       unsigned  int x_resolution,
                       unsigned  int y_resolution);
-extern int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
-extern int CTIFFWriteFile(CTIFF);
-extern int CTIFFCloseFile(CTIFF);
-extern void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
+EXTERNFN int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
+EXTERNFN int CTIFFWriteFile(CTIFF);
+EXTERNFN int CTIFFCloseFile(CTIFF);
+EXTERNFN void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
 
 #endif // end CTIFF header lock

@@ -1,4 +1,4 @@
-/* ctiff_meta.h - A TIFF image writing library for spectroscopic data.
+/* ctiff_win32.c - A TIFF image writing library for spectroscopic data.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 18/03/12 16:55:19
@@ -24,23 +24,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CTIFF_META_H
+#if defined(WIN32) && defined(LIB)
+#include "ctiff.h"
+#endif
 
-#define CTIFF_META_H
-
-#include "ctiff_types.h"
-
-typedef struct JSON_checker_struct {
-    int state;
-    int depth;
-    int top;
-    int* stack;
-} * JSON_checker;
-
-
-int __CTIFFIsValidJSON(const char* json);
-const char* __CTIFFTarValidExtMeta(const char* json);
-const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
-                                      const char* ext_meta);
-
-#endif /* end of include guard: CTIFF_META_H */

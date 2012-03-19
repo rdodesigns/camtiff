@@ -26,6 +26,10 @@
 
 #define CTIFF_UTIL_H
 
+#ifdef WIN32
+#define inline __inline // Microsoft, I hate you (uses C89).
+#endif
+
 #define FREE(p)    do { free((void*) (p)); (p) = NULL; } while(0)
 #define RETNONZERO(f) if ((retval = (f)) == 0) return retval
 

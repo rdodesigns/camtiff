@@ -24,18 +24,22 @@
 
 #include <tiffio.h>  // libTIFF (preferably 3.9.5+)
 #include <string.h>  // strlen
+#include <stdlib.h>  // malloc
 
 #include "ctiff_types.h"
-#include "ctiff_write.h"
 #include "ctiff_util.h"
 #include "ctiff_error.h"
 
+#include "ctiff_write.h"
+
 void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
 {
-  char buf[strlen(ext_meta->data) + strlen(ext_meta->white_space) + 1];
+  char *buf = (char*) malloc(strlen(ext_meta->data) + 
+	                         strlen(ext_meta->white_space) + 1);
   sprintf(buf, "%s%s", ext_meta->data, ext_meta->white_space);
 
   TIFFSetField(tiff, TIFFTAG_XMLPACKET, sizeof(buf), buf);
+  FREE(buf);
 }
 
 void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)

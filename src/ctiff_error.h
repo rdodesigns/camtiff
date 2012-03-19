@@ -27,7 +27,7 @@
 #define CTIFF_ERROR_H
 
 // Error Codes
-enum ERROR {
+enum CTIFFERRORS {
   ECTIFFNULL=1,
   ECTIFFNULLDIR,
   ECTIFFOPEN,

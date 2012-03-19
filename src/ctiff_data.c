@@ -25,13 +25,14 @@
 #include <stdlib.h> // malloc
 #include <string.h> // memcpy
 
-#include "ctiff_data.h"
 #include "ctiff_types.h"
+#include "ctiff_write.h"
+#include "ctiff_util.h"
 #include "ctiff_error.h"
 #include "ctiff_meta.h"
-#include "ctiff_util.h"
-#include "ctiff_write.h"
 #include "ctiff_vers.h"
+
+#include "ctiff_data.h"
 
 int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
 {
@@ -111,10 +112,11 @@ void __CTIFFFreeDir(CTIFF_dir *dir)
 }
 
 int __CTIFFFreeFile(CTIFF ctiff)
-{
-  if  (ctiff == NULL) return ECTIFFNULL;
+{ 
+  CTIFF_dir *tmp_dir;
 
-  CTIFF_dir* tmp_dir;
+  if (ctiff == NULL) return ECTIFFNULL;
+
   while (ctiff->first_dir != NULL){
     tmp_dir = ctiff->first_dir;
     ctiff->first_dir = tmp_dir->next_dir;
@@ -124,7 +126,7 @@ int __CTIFFFreeFile(CTIFF ctiff)
   FREE(ctiff->def_dir->ext_meta.white_space);
   FREE(ctiff->def_dir);
   FREE(ctiff);
-  ctiff = NULL;
   tmp_dir = NULL;
+
   return 0;
 }

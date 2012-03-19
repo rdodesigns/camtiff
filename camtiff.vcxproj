@@ -11,12 +11,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\camtiff.h" />
-    <ClInclude Include="src\json_validate.h" />
+    <ClInclude Include="src\ctiff.h" />
+    <ClInclude Include="src\ctiff_data.h" />
+    <ClInclude Include="src\ctiff_error.h" />
+    <ClInclude Include="src\ctiff_io.h" />
+    <ClInclude Include="src\ctiff_meta.h" />
+    <ClInclude Include="src\ctiff_settings.h" />
+    <ClInclude Include="src\ctiff_types.h" />
+    <ClInclude Include="src\ctiff_util.h" />
+    <ClInclude Include="src\ctiff_vers.h" />
+    <ClInclude Include="src\ctiff_write.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\camtiff.c" />
-    <ClCompile Include="src\json_validate.c" />
+    <ClCompile Include="src\ctiff_data.c" />
+    <ClCompile Include="src\ctiff_io.c" />
+    <ClCompile Include="src\ctiff_meta.c" />
+    <ClCompile Include="src\ctiff_settings.c" />
+    <ClCompile Include="src\ctiff_util.c" />
+    <ClCompile Include="src\ctiff_win32.c" />
+    <ClCompile Include="src\ctiff_write.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
@@ -54,6 +67,7 @@
     <IntDir>$(SolutionDir)bin\win\$(Configuration)\</IntDir>
     <IncludePath>.\libtiff-3.9.5\libtiff;$(IncludePath)</IncludePath>
     <LibraryPath>.\libtiff-3.9.5\libtiff;$(LibraryPath)</LibraryPath>
+    <TargetName>libctiff</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

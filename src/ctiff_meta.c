@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <stdio.h>  // sprintf
 #include <string.h> // memset
-#include <stdbool.h>
 
 #include "ctiff_meta.h"
 #include "ctiff_util.h"
@@ -131,7 +130,7 @@ enum states {
     U4,  /* u4       */
     MI,  /* minus    */
     ZE,  /* zero     */
-    IN,  /* integer  */
+    IT,  /* integer  */
     FR,  /* fraction */
     E1,  /* e        */
     E2,  /* ex       */
@@ -164,17 +163,17 @@ static int state_transition_table[NR_STATES][NR_CLASSES] = {
 /*object OB*/ {OB,OB,__,-9,__,__,__,__,ST,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
 /*key    KE*/ {KE,KE,__,__,__,__,__,__,ST,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
 /*colon  CO*/ {CO,CO,__,__,__,__,-2,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
-/*value  VA*/ {VA,VA,-6,__,-5,__,__,__,ST,__,__,__,MI,__,ZE,IN,__,__,__,__,__,F1,__,N1,__,__,T1,__,__,__,__},
-/*array  AR*/ {AR,AR,-6,__,-5,-7,__,__,ST,__,__,__,MI,__,ZE,IN,__,__,__,__,__,F1,__,N1,__,__,T1,__,__,__,__},
+/*value  VA*/ {VA,VA,-6,__,-5,__,__,__,ST,__,__,__,MI,__,ZE,IT,__,__,__,__,__,F1,__,N1,__,__,T1,__,__,__,__},
+/*array  AR*/ {AR,AR,-6,__,-5,-7,__,__,ST,__,__,__,MI,__,ZE,IT,__,__,__,__,__,F1,__,N1,__,__,T1,__,__,__,__},
 /*string ST*/ {ST,__,ST,ST,ST,ST,ST,ST,-4,ES,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST,ST},
 /*escape ES*/ {__,__,__,__,__,__,__,__,ST,ST,ST,__,__,__,__,__,__,ST,__,__,__,ST,__,ST,ST,__,ST,U1,__,__,__},
 /*u1     U1*/ {__,__,__,__,__,__,__,__,__,__,__,__,__,__,U2,U2,U2,U2,U2,U2,U2,U2,__,__,__,__,__,__,U2,U2,__},
 /*u2     U2*/ {__,__,__,__,__,__,__,__,__,__,__,__,__,__,U3,U3,U3,U3,U3,U3,U3,U3,__,__,__,__,__,__,U3,U3,__},
 /*u3     U3*/ {__,__,__,__,__,__,__,__,__,__,__,__,__,__,U4,U4,U4,U4,U4,U4,U4,U4,__,__,__,__,__,__,U4,U4,__},
 /*u4     U4*/ {__,__,__,__,__,__,__,__,__,__,__,__,__,__,ST,ST,ST,ST,ST,ST,ST,ST,__,__,__,__,__,__,ST,ST,__},
-/*minus  MI*/ {__,__,__,__,__,__,__,__,__,__,__,__,__,__,ZE,IN,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
+/*minus  MI*/ {__,__,__,__,__,__,__,__,__,__,__,__,__,__,ZE,IT,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
 /*zero   ZE*/ {OK,OK,__,-8,__,-7,__,-3,__,__,__,__,__,FR,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
-/*int    IN*/ {OK,OK,__,-8,__,-7,__,-3,__,__,__,__,__,FR,IN,IN,__,__,__,__,E1,__,__,__,__,__,__,__,__,E1,__},
+/*int    IT*/ {OK,OK,__,-8,__,-7,__,-3,__,__,__,__,__,FR,IT,IT,__,__,__,__,E1,__,__,__,__,__,__,__,__,E1,__},
 /*frac   FR*/ {OK,OK,__,-8,__,-7,__,-3,__,__,__,__,__,__,FR,FR,__,__,__,__,E1,__,__,__,__,__,__,__,__,E1,__},
 /*e      E1*/ {__,__,__,__,__,__,__,__,__,__,__,E2,E2,__,E3,E3,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
 /*ex     E2*/ {__,__,__,__,__,__,__,__,__,__,__,__,__,__,E3,E3,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
@@ -472,12 +471,14 @@ const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
 {
   char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
   const char* tar_ext_meta;
-  char  buf_ext[strlen(ext_meta) + strlen(name)+2];
+  const char* key_value = ",\"%s\":%s";
+  char  *buf_ext = (char*) malloc(strlen(ext_meta) + strlen(name)+ 
+	                              strlen(key_value) + 2);
 
   if (name != NULL && strlen(name) != 0 &&
       ext_meta != NULL && strlen(ext_meta) != 0 &&
       (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta)) != NULL ){
-    sprintf(buf_ext, ",\"%s\":%s", name, tar_ext_meta);
+    sprintf(buf_ext, key_value, name, tar_ext_meta);
     FREE(tar_ext_meta);
   } else {
     sprintf(buf_ext, "%s", "");
@@ -490,6 +491,7 @@ const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
               CTIFF_TESTING_VERSION,
               strict ? "true" : "false",
               buf_ext);
-
+  
+  FREE(buf_ext);
   return buf;
 }
