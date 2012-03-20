@@ -3,15 +3,8 @@
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 18/03/12 16:55:19
  *
- * The Laser Analytics Tiff Writer University of Cambridge (camtiff) is a
- * library designed to, given an input 16 bit 3D array and some additional
- * comments, produce a TIFF image stack. It is designed to work with a piece
- * of LabVIEW software within the Laser Analytics group codenamed Apollo, a
- * front end for acquiring spectroscopic images.
- *
  * 2007-08-24
  * Copyright (c) 2005 JSON.org
- *
  *
  * Copyright (GPL V3):
  * This program is free software: you can redistribute it and/or modify
@@ -472,7 +465,7 @@ const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
   char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
   const char* tar_ext_meta;
   const char* key_value = ",\"%s\":%s";
-  char  *buf_ext = (char*) malloc(strlen(ext_meta) + strlen(name)+ 
+  char  *buf_ext = (char*) malloc(strlen(ext_meta) + strlen(name)+
 	                              strlen(key_value) + 2);
 
   if (name != NULL && strlen(name) != 0 &&
@@ -491,7 +484,7 @@ const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
               CTIFF_TESTING_VERSION,
               strict ? "true" : "false",
               buf_ext);
-  
+
   FREE(buf_ext);
   return buf;
 }
