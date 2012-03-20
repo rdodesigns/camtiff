@@ -13,4 +13,5 @@
 *.exp
 
 bin/*
+ignore
 
