@@ -290,13 +290,12 @@ JSON_checker_char(JSON_checker jc, int next_char)
     Get the next state from the state transition table.
 */
     next_state = state_transition_table[jc->state][next_class];
+    if (!(next_state == ST) &&
+         (next_class == C_SPACE || next_class == C_WHITE))
+      retchar = -1;
+
     if (next_state >= 0) {
-/*
-    Change the state.
-*/
-        if (!(next_state == ST || next_state == KE) &&
-             (next_class == C_SPACE || next_class == C_WHITE))
-          retchar = -1;
+        /* Change the state.  */
         jc->state = next_state;
     } else {
 /*
