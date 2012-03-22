@@ -1,9 +1,13 @@
 Introduction
 ============
 
-Supports writing 8, 16, and 32 bit unsigned integer image stacks.
+Write TIFF files with embedded metadata.
 
-A precompiled Windows 32-bit DLL can be found in the _built/_ directory.
+Programs
+========
+
+LabVIEW VIs to write CamTIFF files and MATLAB scripts to read them
+can be found in the _programs_ folder.
 
 Compiling
 =========
@@ -62,27 +66,6 @@ Note that `nmake` may be most easily accessed through the VS2010 command prompt
 program, and some errors may be produced if you compile the libtiff tools along
 with the libtiff library files.
 
-
-Using in LabVIEW
-================
-
-See [this article][LabVIEW_DLL]([pdf][LabVIEW_DLL_pdf]) (skipping to step 9)
-for how to use the created DLL.
-
-The relevant function declaration is below.
-
-```C
-int tiffWrite(uint32_t width, uint32_t height,
-              uint32_t pages, uint8_t pixel_bit_depth,
-              const char* artist, const char* copyright, const char* make,
-              const char* model, const char* software, const char* image_desc,
-              const char* output_path, const void* const buffer);
-```
-
-To note that LabVIEW typedefs `char*` as `CStr` (this shows up in the
-_Function prototype_ window under the _Parameters_ tab), and that the
-dimensions of the buffer variable must be specified in the _Call Library
-Function Node_ VI.
 
 [libtiff_build]: http://www.remotesensing.org/libtiff/build.html#PC "Building the libTIFF Software Distribution"
 [LabVIEW_DLL]: https://decibel.ni.com/content/docs/DOC-1690 "Using Existing C Code or a DLL in LabVIEW"
