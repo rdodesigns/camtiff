@@ -13,5 +13,6 @@
 *.exp
 
 bin/*
+wiki/*
 ignore
 
