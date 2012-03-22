@@ -12,7 +12,7 @@
 *.pdb
 *.exp
 
-bin/*
-wiki/*
+bin/
+wiki/
 ignore
 
