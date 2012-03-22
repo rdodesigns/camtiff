@@ -117,7 +117,6 @@ int __CTIFFFreeFile(CTIFF ctiff)
     __CTIFFFreeDir(tmp_dir);
   }
 
-  FREE(ctiff->def_dir->ext_meta.white_space);
   FREE(ctiff->def_dir);
   FREE(ctiff);
   tmp_dir = NULL;

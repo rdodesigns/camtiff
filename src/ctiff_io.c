@@ -37,9 +37,6 @@ CTIFF CTIFFNewFile(const char* output_file)
   CTIFF_basic_metadata     *b_meta = &def_dir->basic_meta;
   CTIFF_extended_metadata  *e_meta = &def_dir->ext_meta;
 
-  int  white_space_size = 4096;
-  char *white_space = (char*) malloc(white_space_size);
-
   // TODO: If output_file == NULL, write to tmp location.
   if ((ctiff->tiff = TIFFOpen(output_file, "w")) == NULL){
     FREE(ctiff);
@@ -82,12 +79,7 @@ CTIFF CTIFFNewFile(const char* output_file)
   // Set extended metadata
   e_meta->data = NULL;
 
-  memset(white_space,' ', white_space_size-1);
-  white_space[white_space_size-1] = '\0';
-  e_meta->white_space = white_space;
-
   ctiff->def_dir = def_dir;
-
   return ctiff;
 }
 

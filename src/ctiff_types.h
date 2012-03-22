@@ -74,7 +74,6 @@ typedef struct {
 
 typedef struct {
   const char   *data;
-  const char   *white_space;
 } CTIFF_extended_metadata;
 
 typedef struct CTIFF_dir_style_s {

@@ -28,12 +28,7 @@
 
 void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
 {
-  char *buf = (char*) malloc(strlen(ext_meta->data) +
-	                         strlen(ext_meta->white_space) + 1);
-  sprintf(buf, "%s%s", ext_meta->data, ext_meta->white_space);
-
-  TIFFSetField(tiff, TIFFTAG_XMLPACKET, strlen(buf), buf);
-  FREE(buf);
+  TIFFSetField(tiff, TIFFTAG_XMLPACKET, strlen(ext_meta->data), ext_meta->data);
 }
 
 void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)
