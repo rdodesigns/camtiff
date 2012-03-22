@@ -33,16 +33,14 @@ function [ out ] = loadcamtiff(filename, varargin)
   if mode.einfo && xmp_exists
     einfo_start = loadjson(info(1).XMP);
 
-    if isfield(einfo_start{1}, 'camtiff_version')
+    if isfield(einfo_start, 'CamTIFF_Version')
       camtiff = true;
 
       if mode.stack
         json = loadjson([info.XMP]);
-        json = json(2:2:length(json));
         image_stack.einfo = json{1};
       else
         json = loadjson(info(1).XMP);
-        json = json{2};
         image_stack.einfo = json;
       end % if mode.stack
 
