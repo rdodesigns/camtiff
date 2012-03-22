@@ -25,20 +25,4 @@
 CTIFF CTIFFNewFile(const char* output_file);
 int CTIFFCloseFile(CTIFF ctiff);
 
-int tiffWrite(unsigned int width,
-              unsigned int height,
-              unsigned int pages,
-              unsigned int pixel_type,
-              const char* artist,
-              const char* copyright,
-              const char* make,
-              const char* model,
-              const char* software,
-              const char* image_desc,
-              const char* ext_metadata_name,
-              const char* ext_metadata,
-              bool strict,
-              const char* output_path,
-              const void* const buffer);
-
 #endif /* end of include guard: CTIFF_IO_H */

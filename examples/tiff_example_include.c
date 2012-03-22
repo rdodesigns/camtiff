@@ -78,12 +78,4 @@ int main(void)
   destroyBuffer(buffer);
 
   return retval;
-
-
-  // Note that this self contained, non-malloc version also exists.
-  /*TRYFUNC(tiffWrite(width, height, pages, CTIFF_PIXEL_UINT16,*/
-                    /*artist, copyright, make, model,*/
-                    /*software, image_desc, "example", metadata, true,*/
-                    /*output_path, buffer),*/
-          /*"Could not create tiff.")*/
 }
