@@ -35,14 +35,14 @@ int main(void)
   int retval = 0;
   const void *buf;
 
-  char  *output_path    = "output.tif";
-  char  *artist         = "Artist";
-  char  *copyright      = "Copyright";
-  char  *make           = "Camera Manufacturer";
-  char  *model          = "Camera Model";
-  char  *software       = "Software";
-  char  *image_desc     = "Created through include statements.";
-  char   metadata[][80] = {"{\"key with spaces\": \r\n\t \"data with spaces 1\"}",
+  char *output_path    = "output.tif";
+  char *artist         = "Artist";
+  char *copyright      = "Copyright";
+  char *make           = "Camera Manufacturer";
+  char *model          = "Camera Model";
+  char *software       = "Software";
+  char *image_desc     = "Created through include statements.";
+  char  metadata[][80] = {"{\"key with spaces\": \r\n\t \"data with spaces 1\"}",
                            "{\"numeric_data\": 1337 }",
                            "{\"boolean data\": true}",
                            "{\"array data\": [ [ 1, 2, 3], [4, 5, 6], [7, 8, 9]]}",

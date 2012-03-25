@@ -54,14 +54,14 @@ if [ "$1" = "lib" ]; then
 
   for code in ${SOURCE[*]}
   do
-    clang -c -fpic $INCLUDES -Wall $DDEBUG \
+    clang -c -fpic $INCLUDES -Wall $DEBUG \
       -o bin/$code.o src/$code.c
   done
 
   clang -shared -W1,-soname,libctiff.so.0 -lc $LIBRARY -ltiff \
     -o bin/libctiff.so.0 bin/*.o
 
-  clang -ldl -lm -Lbin/ -DLIB -Wall $DDEBUG \
+  clang -ldl -lm -Lbin/ -DLIB -Wall $DEBUG \
     -o bin/tiff_write_dyn               \
     examples/tiff_example_dyn_unix.c    \
     examples/buffer.c                   \
