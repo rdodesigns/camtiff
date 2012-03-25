@@ -175,7 +175,6 @@ int CTIFFSetStyle(CTIFF ctiff,
  */
 int CTIFFSetRes(CTIFF ctiff, unsigned int x_res, unsigned int y_res)
 {
-  // TODO: Move the x_res, y_res outside of style struct?
   CTIFF_dir_style* def_style;
 
   if (ctiff == NULL) return ECTIFFNULL;
