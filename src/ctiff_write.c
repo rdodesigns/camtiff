@@ -1,4 +1,5 @@
-/* ctiff_write.c - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_write.c
+ * @description Writing CTIFF files to disk.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
  *
@@ -26,11 +27,24 @@
 
 #include "ctiff_write.h"
 
+/** Write the extended metadata to the TIFF file.
+ *
+ * @param ext_meta The extended metadata struct to add.
+ * @param tiff     The CamTIFF file to add the metadata to.
+ */
 void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
 {
   TIFFSetField(tiff, TIFFTAG_XMLPACKET, strlen(ext_meta->data), ext_meta->data);
 }
 
+/** Write the basic metadata to the TIFF File.
+ *
+ *  No information for a particular field (ex: artist) is added if that field
+ *  is NULL.
+ *
+ * @param basic_meta The basic metadata struct to add.
+ * @param tiff       The CamTIFF file to add the metadata to.
+ */
 void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)
 {
   if (basic_meta->artist != NULL){
@@ -58,6 +72,12 @@ void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)
   }
 }
 
+/** Write style information to a CamTIFF file.
+ *
+ * @param style The style to write to the CamTIFF file.
+ * @param tiff  The CamTIFF file to add the metadata to.
+ * @return      0 on success, non-zero CamTIFF error on failure.
+ */
 int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
 {
   int retval = 0;
@@ -88,13 +108,19 @@ int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
   RETNONZERO(TIFFSetField(tiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG));
 
   // These values do not impact image reading
-  RETNONZERO(TIFFSetField(tiff, TIFFTAG_XRESOLUTION, style->x_resolution));
-  RETNONZERO(TIFFSetField(tiff, TIFFTAG_YRESOLUTION, style->y_resolution));
-  RETNONZERO(TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_NONE));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_XRESOLUTION, style->x_res));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_YRESOLUTION, style->y_res));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESOLTIONUNIT_NONE));
 
   return retval;
 }
 
+/** Write a directory to a CamTIFF file.
+ *
+ * @param dir   The directory to write to the CamTIFF file.
+ * @param tiff  The CamTIFF file to add the metadata to.
+ * @return      CTIFFSUCCESS on success, non-zero CamTIFF error on failure.
+ */
 int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
 {
   int retval = 0;
@@ -118,7 +144,7 @@ int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
 
   // Write the information to the file -1 on error, strip length on success.
   for (i=0; i < height; i++) {
-    strip_buffer = moveArrayPtr(image, i*width, bps);
+    strip_buffer = __movePtr(image, i*width, bps);
 
     if (TIFFWriteEncodedStrip(tiff,i,(void*)strip_buffer,width*bps/8) == -1){
       // TODO: Is it possible to flush a partial directory?
@@ -135,9 +161,28 @@ int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
   return retval;
 }
 
-int CTIFFWriteFile(CTIFF ctiff)
+/** Write a CamTIFF file to disk.
+ *
+ *  This function writes the current contents of a CamTIFF file to disk. By
+ *  default, this function is called implicitly every time the CTIFFAddNewPage
+ *  function is called. If CTIFFWriteEvery is set to some value other than
+ *  one, then on the supplied number of page additions this function is called
+ *  implicitly.
+ *
+ *  Calling this function causes all of the unwritten directories to be
+ *  written to disk. As such, it is a good idea to call this function before a
+ *  function close just to ensure that all of the information inside the
+ *  CamTIFF file has been written out to disk.
+ *
+ * @see CTIFFAddNewPage
+ * @see CTIFFWriteEvery
+ * @see CTIFFClose
+ *
+ * @param ctiff The CamTIFF file to write to disk.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
+ */
+int CTIFFWrite(CTIFF ctiff)
 {
-
   int retval = 0;
   unsigned int *num_unwritten;
   CTIFF_dir *dir, *prev_dir;

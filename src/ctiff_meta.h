@@ -1,4 +1,5 @@
-/* ctiff_meta.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_meta.h
+ * @description Functions for creating/validating metadata.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 18/03/12 16:55:19
@@ -23,14 +24,6 @@
 #define CTIFF_META_H
 
 #include "ctiff_types.h"
-
-typedef struct JSON_checker_struct {
-    int state;
-    int depth;
-    int top;
-    int* stack;
-} * JSON_checker;
-
 
 int __CTIFFIsValidJSON(const char* json);
 const char* __CTIFFTarValidExtMeta(const char* json);

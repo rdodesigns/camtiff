@@ -27,8 +27,8 @@
 #define FREE(p)    do { free((void*) (p)); (p) = NULL; } while(0)
 #define RETNONZERO(f) if ((retval = (f)) == 0) return retval
 
-static inline const void* moveArrayPtr(const void* const ptr,
-                                       unsigned int dist, unsigned int size)
+static inline const void* __movePtr(const void* const ptr,
+                                    unsigned int dist, unsigned int size)
 {
   return (void *) (((char *) ptr)+(dist*size/8));
 }

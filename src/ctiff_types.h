@@ -1,4 +1,5 @@
-/* ctiff_types.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_types.h
+ * @description Define the data structures in CamTIFF.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
  *
@@ -39,12 +40,21 @@
   #include <stdbool.h> // bool type
 #endif
 
+// Alleviates need to import libTIFF here.
 struct tiff;
 
-//      Pixel size = ((pixel_type & 0x0F) + 0x01) << 3
-// TIFF Pixel type = (pixel_type >> 4) & 0x0F
 #define CTIFF_PIXEL_TYPE_MIN 1
 #define CTIFF_PIXEL_TYPE_MAX 3
+/** The pixel types for CamTIFF.
+ *
+ *  CamTIFF pixel types combine TIFF pixel types (numbers 1-6) with the size
+ *  of the pixel in question, where the TIFF pixel type is in 0xF0 and the
+ *  size is in 0x0F.  Use the following equations to calculate either the
+ *  pixel type or size.
+ *
+ *  Pixel size = ((pixel_type & 0x0F) + 0x01) << 3
+ *  TIFF Pixel type = (pixel_type >> 4) & 0x0F
+ */
 enum pixel_type_e {           // LibTIFF tags
   CTIFF_PIXEL_UINT8   = 0x10, // SAMPLEFORMAT_UINT   = 1,
   CTIFF_PIXEL_UINT16  = 0x11,
@@ -55,7 +65,6 @@ enum pixel_type_e {           // LibTIFF tags
   CTIFF_PIXEL_FLOAT32 = 0x33, // SAMPLEFORMAT_IEEEFP = 3
   CTIFF_PIXEL_FLOAT64 = 0x37
 };
-
 /* TODO: Support the complex pixel data types.
  *   SAMPLEFORMAT_VOID          = 4 // Does not reflect real life signals
  *   SAMPLEFORMAT_COMPLEXINT    = 5
@@ -63,6 +72,7 @@ enum pixel_type_e {           // LibTIFF tags
  */
 
 
+/** Structure for holding basic metadata about an image. */
 typedef struct {
   const char *artist;
   const char *copyright;
@@ -72,10 +82,17 @@ typedef struct {
   const char *image_desc;
 } CTIFF_basic_metadata;
 
+/** Structure for holding the extended metadata about an image.
+ *
+ *  This structure is usually created dynamically, and should be freed with
+ *  __CTIFFFreeExtMeta.
+ * @see __CTIFFFreeExtMeta
+ */
 typedef struct {
   const char   *data;
 } CTIFF_extended_metadata;
 
+/** Structure for holding the style (width, height, etc) of a directory. */
 typedef struct CTIFF_dir_style_s {
   unsigned  int width;
   unsigned  int height;
@@ -83,10 +100,16 @@ typedef struct CTIFF_dir_style_s {
   unsigned char pixel_data_type;
            bool in_color;
            bool black_is_min;
-  unsigned  int x_resolution;
-  unsigned  int y_resolution;
+  unsigned  int x_res;
+  unsigned  int y_res;
 } CTIFF_dir_style;
 
+/** Structure for holding an image and its associated metadata.
+ *
+ *  This structure is usually created dynamically, and should be freed with
+ *  __CTIFFFreeDir
+ * @see __CTIFFFreeDir
+ */
 typedef struct CTIFF_dir_s {
           CTIFF_dir_style  style;
      CTIFF_basic_metadata  basic_meta;
@@ -97,6 +120,12 @@ typedef struct CTIFF_dir_s {
                       int  refs;
 } CTIFF_dir;
 
+/** Structure for holding a set of CamTIFF directories.
+ *
+ *  This structure is usually created dynamically, and should be freed with
+ *  __CTIFFFree.
+ * @see __CTIFFFree
+ */
 typedef struct CTIFF_s {
   struct tiff  *tiff;
   const char   *output_file;

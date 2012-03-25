@@ -1,4 +1,8 @@
-/* ctiff.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff.h
+ * @description A TIFF + JSON image writing library.
+ *
+ * This is the opaque header that should be included in statically compiled
+ * binaries.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 28/10/11 21:00:27
  *
@@ -46,8 +50,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 #else
 #endif
 
-extern CTIFF CTIFFNewFile(const char*);
-extern int CTIFFCloseFile(CTIFF);
+extern CTIFF CTIFFNew(const char*);
+extern int CTIFFClose(CTIFF);
 extern int CTIFFSetBasicMeta(CTIFF ctiff,
                       const char *artist,
                       const char *copyright,
@@ -55,18 +59,15 @@ extern int CTIFFSetBasicMeta(CTIFF ctiff,
                       const char *model,
                       const char *software,
                       const char *image_desc);
-extern int CTIFFSetPageStyle(CTIFF ctiff,
+extern int CTIFFSetStyle(CTIFF ctiff,
                       unsigned  int width,
                       unsigned  int height,
                       unsigned  int pixel_type,
-                               bool in_color,
-                      unsigned  int x_resolution,
-                      unsigned  int y_resolution);
+                               bool in_color);
+extern int CTIFFSetRes(CTIFF ctiff, unsigned int x_res, unsigned int y_res);
 extern int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
-extern int CTIFFWriteFile(CTIFF);
-extern int CTIFFCloseFile(CTIFF);
+extern int CTIFFWrite(CTIFF);
+extern int CTIFFClose(CTIFF);
 extern void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
-
-
 
 #endif // end CTIFF header lock

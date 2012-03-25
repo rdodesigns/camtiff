@@ -1,9 +1,12 @@
-/* ctiff_meta.c - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_meta.c
+ * @description Functions for creating/validating metadata.
+ *
+ * Created using a pushdown automaton parser.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 18/03/12 16:55:19
  *
- * 2007-08-24
+ * Large parts copied from the JSON C validator.
  * Copyright (c) 2005 JSON.org
  *
  * Copyright (GPL V3):
@@ -33,14 +36,20 @@
 const char *CTIFF_ext_head = "{\"CamTIFF_Version\":\"%d.%d.%d%s\","
                              "\"strict\":%s%s}";
 
+typedef struct JSON_checker_struct {
+    int state;
+    int depth;
+    int top;
+    int* stack;
+} * JSON_checker;
+
 #define __   -1     /* the universal error code */
 
-/*
-    Characters are mapped into these 31 character classes. This allows for
-    a significant reduction in the size of the state transition table.
-*/
-
-
+/** Define the type of a symbol in a JSON string.
+ *
+ *  Characters are mapped into these 31 character classes. This allows for
+ *  a significant reduction in the size of the state transition table.
+ */
 enum classes {
     C_SPACE,  /* space */
     C_WHITE,  /* other whitespace */
@@ -76,12 +85,13 @@ enum classes {
     NR_CLASSES
 };
 
+/** Map characters to their symbol type.
+ *
+ *  This array maps the 128 ASCII characters into character classes.
+ *  The remaining Unicode characters should be mapped to C_ETC.
+ *  Non-whitespace control characters are errors.
+ */
 static int ascii_class[128] = {
-/*
-    This array maps the 128 ASCII characters into character classes.
-    The remaining Unicode characters should be mapped to C_ETC.
-    Non-whitespace control characters are errors.
-*/
     __,      __,      __,      __,      __,      __,      __,      __,
     __,      C_WHITE, C_WHITE, __,      __,      C_WHITE, __,      __,
     __,      __,      __,      __,      __,      __,      __,      __,
@@ -104,9 +114,10 @@ static int ascii_class[128] = {
 };
 
 
-/*
-    The state codes.
-*/
+/** The state codes.
+ *
+ *  Used by the pushdown automaton to define its current state.
+ */
 enum states {
     GO,  /* start    */
     OK,  /* ok       */
@@ -142,14 +153,15 @@ enum states {
 };
 
 
+/** State table for pushdown automaton.
+ *
+ *  The state transition table takes the current state and the current symbol,
+ *  and returns either a new state or an action. An action is represented as a
+ *  negative number. A JSON text is accepted if at the end of the text the
+ *  state is OK and if the mode is MODE_DONE.
+ */
 static int state_transition_table[NR_STATES][NR_CLASSES] = {
-/*
-    The state transition table takes the current state and the current symbol,
-    and returns either a new state or an action. An action is represented as a
-    negative number. A JSON text is accepted if at the end of the text the
-    state is OK and if the mode is MODE_DONE.
-
-                 white                                      1-9                                   ABCDF  etc
+/*               white                                      1-9                                   ABCDF  etc
              space |  {  }  [  ]  :  ,  "  \  /  +  -  .  0  |  a  b  c  d  e  f  l  n  r  s  t  u  |  E  |*/
 /*start  GO*/ {GO,GO,-6,__,-5,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
 /*ok     OK*/ {OK,OK,__,-8,__,-7,__,-3,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__,__},
@@ -184,9 +196,7 @@ static int state_transition_table[NR_STATES][NR_CLASSES] = {
 };
 
 
-/*
-    These modes can be pushed on the stack.
-*/
+/** These modes can be pushed on the stack.  */
 enum modes {
     MODE_ARRAY,
     MODE_DONE,
@@ -194,24 +204,31 @@ enum modes {
     MODE_OBJECT,
 };
 
+/** Delete the JSON_checker object.
+ *
+ *  Frees the memory associated with the JSON parser if the JSON string is
+ *  invalid.
+ *
+ * @param jc The JSON_checker automaton structure.
+ * @return false always.
+ */
 static int
 reject(JSON_checker jc)
 {
-/*
-    Delete the JSON_checker object.
-*/
     free((void*)jc->stack);
     free((void*)jc);
     return false;
 }
 
 
+/** Push a mode onto the stack.
+ *
+ * @param jc The JSON_checker automaton structure.
+ * @return false if there is overflow.
+ */
 static int
 push(JSON_checker jc, int mode)
 {
-/*
-    Push a mode onto the stack. Return false if there is overflow.
-*/
     jc->top += 1;
     if (jc->top >= jc->depth) {
         return false;
@@ -221,13 +238,16 @@ push(JSON_checker jc, int mode)
 }
 
 
+/** Pop from the stack.
+ *
+ *  Pop the stack, assuring that the current mode matches the expectation.
+ *
+ * @param jc The JSON_checker automaton structure.
+ * @return True on success, false if there is underflow or the modes mismatch.
+ */
 static int
 pop(JSON_checker jc, int mode)
 {
-/*
-    Pop the stack, assuring that the current mode matches the expectation.
-    Return false if there is underflow or if the modes mismatch.
-*/
     if (jc->top < 0 || jc->stack[jc->top] != mode) {
         return false;
     }
@@ -236,21 +256,25 @@ pop(JSON_checker jc, int mode)
 }
 
 
+/** Create new JSON checker object.
+ *
+ *  new_JSON_checker starts the checking process by constructing a JSON_checker
+ *  object. It takes a depth parameter that restricts the level of maximum
+ *  nesting.
+ *
+ *  To continue the process, call JSON_checker_char for each character in the
+ *  JSON text, and then call JSON_checker_done to obtain the final result.
+ *  These functions are fully reentrant.
+ *
+ *  The JSON_checker object will be deleted by JSON_checker_done.
+ *  JSON_checker_char will delete the JSON_checker object if it sees an error.
+ *
+ *  @param depth The size of the mode stack.
+ *  @return A JSON_checker struct.
+ */
 JSON_checker
 new_JSON_checker(int depth)
 {
-/*
-    new_JSON_checker starts the checking process by constructing a JSON_checker
-    object. It takes a depth parameter that restricts the level of maximum
-    nesting.
-
-    To continue the process, call JSON_checker_char for each character in the
-    JSON text, and then call JSON_checker_done to obtain the final result.
-    These functions are fully reentrant.
-
-    The JSON_checker object will be deleted by JSON_checker_done.
-    JSON_checker_char will delete the JSON_checker object if it sees an error.
-*/
     JSON_checker jc = (JSON_checker)malloc(sizeof(struct JSON_checker_struct));
     jc->state = GO;
     jc->depth = depth;
@@ -261,20 +285,25 @@ new_JSON_checker(int depth)
 }
 
 
+/** Check if next charater in a string is valid for the current JSON state.
+ *
+ *  After calling new_JSON_checker, call this function for each character (or
+ *  partial character) in your JSON text. It can accept UTF-8, UTF-16, or
+ *  UTF-32. It returns true if things are looking ok so far. If it rejects the
+ *  text, it deletes the JSON_checker object and returns false.
+ *
+ * @param jc        The JSON_checker automaton structure.
+ * @param next_char The next character in the string to test.
+ * @return          next_char if it is not whitespace. -1 if it is white
+ *                  space. 0/false on failure.
+ */
 char
 JSON_checker_char(JSON_checker jc, int next_char)
 {
-/*
-    After calling new_JSON_checker, call this function for each character (or
-    partial character) in your JSON text. It can accept UTF-8, UTF-16, or
-    UTF-32. It returns true if things are looking ok so far. If it rejects the
-    text, it deletes the JSON_checker object and returns false.
-*/
     int retchar = next_char;
     int next_class, next_state;
-/*
-    Determine the character's class.
-*/
+
+    // Determine the character's class.
     if (next_char < 0) {
         return reject(jc);
     }
@@ -286,21 +315,20 @@ JSON_checker_char(JSON_checker jc, int next_char)
             return reject(jc);
         }
     }
-/*
-    Get the next state from the state transition table.
-*/
+
     next_state = state_transition_table[jc->state][next_class];
+
+    // If white space character, return -1.
     if (!(next_state == ST) &&
          (next_class == C_SPACE || next_class == C_WHITE))
       retchar = -1;
 
+    // Get the next state from the state transition table.
     if (next_state >= 0) {
-        /* Change the state.  */
+        // Change the state
         jc->state = next_state;
     } else {
-/*
-    Or perform one of the actions.
-*/
+    // Or perform one of the actions.
         switch (next_state) {
 /* empty } */
         case -9:
@@ -355,9 +383,8 @@ JSON_checker_char(JSON_checker jc, int next_char)
 /* , */ case -3:
             switch (jc->stack[jc->top]) {
             case MODE_OBJECT:
-/*
-    A comma causes a flip from object mode to key mode.
-*/
+
+            // A comma causes a flip from object mode to key mode.
                 if (!pop(jc, MODE_OBJECT) || !push(jc, MODE_KEY)) {
                     return reject(jc);
                 }
@@ -372,17 +399,14 @@ JSON_checker_char(JSON_checker jc, int next_char)
             break;
 
 /* : */ case -2:
-/*
-    A colon causes a flip from key mode to object mode.
-*/
+
+            // A colon causes a flip from key mode to object mode.
             if (!pop(jc, MODE_KEY) || !push(jc, MODE_OBJECT)) {
                 return reject(jc);
             }
             jc->state = VA;
             break;
-/*
-    Bad action.
-*/
+// Bad action.
         default:
             return reject(jc);
         }
@@ -391,15 +415,18 @@ JSON_checker_char(JSON_checker jc, int next_char)
 }
 
 
+/** Check that in correct ending mode after string is parsed.
+ *
+ *  The JSON_checker_done function should be called after all of the characters
+ *  have been processed, but only if every call to JSON_checker_char returned
+ *  true. This function deletes the JSON_checker and returns true if the JSON
+ *  text was accepted.
+ *
+ * @param jc The JSON_checker automaton structure.
+ */
 int
 JSON_checker_done(JSON_checker jc)
 {
-/*
-    The JSON_checker_done function should be called after all of the characters
-    have been processed, but only if every call to JSON_checker_char returned
-    true. This function deletes the JSON_checker and returns true if the JSON
-    text was accepted.
-*/
     int result = jc->state == OK && pop(jc, MODE_DONE);
     reject(jc);
     return result;
@@ -428,6 +455,14 @@ int __CTIFFIsValidJSON(const char* json)
   return retval;
 }
 
+/** Validate metadata and return a compressed version.
+ *
+ *  This function removes the white space in between the keys and objects in
+ *  order to create the minimal representation of a JSON object.
+ *
+ * @param json The metadata string.
+ * @return     Compressed JSON string.
+ */
 const char* __CTIFFTarValidExtMeta(const char* json)
 {
   char* ret = (char*) malloc(sizeof(char)*(strlen(json)+1));
@@ -458,6 +493,16 @@ const char* __CTIFFTarValidExtMeta(const char* json)
   return ret;
 }
 
+/** Validate metadata and add CTIFF information header.
+ *
+ *  This function removes the white space in between the keys and objects in
+ *  order to create the minimal representation of a JSON object. Additionally
+ *  it adds information about the CamTIFF file.
+ * @see __CTIFFTarValidExtMeta
+ *
+ * @param json The metadata string.
+ * @return     Compressed JSON string.
+ */
 const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
                                       const char* ext_meta)
 {

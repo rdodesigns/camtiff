@@ -1,4 +1,5 @@
-/* ctiff_data.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_data.h
+ * @description Operations on the data structures.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
  *
@@ -24,7 +25,7 @@
 
 int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
                  const void* page);
-int __CTIFFFreeFile(CTIFF ctiff);
+int __CTIFFFree(CTIFF ctiff);
 
 
 #endif /* end of include guard: CTIFF_DATA_H */

@@ -1,4 +1,5 @@
-/* ctiff_write.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_write.h
+ * @description Writing CTIFF files to disk.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
  *
@@ -22,6 +23,6 @@
 
 #include "ctiff_types.h"
 
-int CTIFFWriteFile(CTIFF ctiff);
+int CTIFFWrite(CTIFF ctiff);
 
 #endif /* end of include guard: CTIFF_WRITE_H */

@@ -1,4 +1,5 @@
-/* ctiff_io.c - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_io.c
+ * @description Create, open, and close CTIFF files.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
  *
@@ -29,7 +30,21 @@
 #include <tiffio.h>  // libTIFF (preferably 3.9.5+)
 
 
-CTIFF CTIFFNewFile(const char* output_file)
+/** Create a new CTIFF file structure with default values.
+ *
+ *  Default values for directory styles, basic and extended metadata are
+ *  created here and copied to new directories as they are added.  One can
+ *  modify the defaults through the Set functions. One is required to call
+ *  CTIFFSetStyle before adding any directories, as the defaults will not
+ *  match the image data added.
+ * @see CTIFFSetStyle
+ * @see CTIFFWrite
+ * @see CTIFFClose
+ *
+ * @param output_file The location where the file will be written.
+ * @return A pointer to the new CTIFF on success, NULL on failure.
+ */
+CTIFF CTIFFNew(const char* output_file)
 {
   CTIFF                      ctiff = (CTIFF) malloc(sizeof(struct CTIFF_s));
   CTIFF_dir               *def_dir = (CTIFF_dir*) malloc(sizeof(CTIFF_dir));
@@ -65,8 +80,8 @@ CTIFF CTIFFNewFile(const char* output_file)
 
   // Set basic def dir style.
   style->black_is_min = true;
-  style->x_resolution = 72;
-  style->y_resolution = 72;
+  style->x_res        = 72;
+  style->y_res        = 72;
 
   // Set basic metadata
   b_meta->artist = NULL;
@@ -84,12 +99,21 @@ CTIFF CTIFFNewFile(const char* output_file)
 }
 
 
-int CTIFFCloseFile(CTIFF ctiff)
+/** Close a CTIFF file, remove it from memory.
+ *
+ *  Note that this does not write the file to disk! To do that, call the
+ *  CTIFFWrite function.
+ * @see CTIFFWrite
+ *
+ * @param ctiff The CTIFF file to close.
+ * @return 0 on success, CTIFF error otherwise.
+ */
+int CTIFFClose(CTIFF ctiff)
 {
   if (ctiff == NULL) return ECTIFFNULL;
 
   TIFFClose(ctiff->tiff);
-  __CTIFFFreeFile(ctiff);
+  __CTIFFFree(ctiff);
 
   return 0;
 }

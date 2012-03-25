@@ -1,4 +1,5 @@
-/* ctiff_error.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_error.h
+ * @description Error codes for CamTIFF.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
  *
@@ -20,6 +21,7 @@
 
 #define CTIFF_ERROR_H
 
+#define CTIFFSUCCESS 0
 // Error Codes
 enum CTIFFERRORS {
   ECTIFFNULL=1,

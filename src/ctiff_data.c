@@ -1,4 +1,5 @@
-/* ctiff_data.c - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_data.c
+ * @description Operations on the data structures.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
  *
@@ -28,6 +29,18 @@
 
 #include "ctiff_data.h"
 
+/** Add directory to CTIFF image stack.
+ *
+ *  This is currently implemented as a linked list. Additionally, the write
+ *  every setting is used to define if a write operation should be performed on
+ *  the addition of the directory.
+ * @see CTIFFWrite
+ * @see CTIFFWriteEvery
+ *
+ * @param ctiff The CTIFF to add the directory to.
+ * @param dir   The directory.
+ * @return      CTIFF error if attachment fails, 0 if success.
+ */
 int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
 {
   if (ctiff == NULL) return ECTIFFNULL;
@@ -46,14 +59,36 @@ int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
   ctiff->num_unwritten++;
 
   if (ctiff->num_unwritten >= ctiff->write_every_num){
-    CTIFFWriteFile(ctiff);
+    CTIFFWrite(ctiff);
   }
 
   return 0;
 }
 
-int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
-                 const void* page)
+/** Create a new TIFF directory with metadata and attach it to a CTIFF.
+ *
+ *  This function adds a new image to a CamTIFF file. Aditionally it attached
+ *  metadata (if it is not null for either the name of the metadata string) to
+ *  the image. Additionally the image addition is timestamped with the current
+ *  time of the local machine, down to second precision.
+ *
+ *  For the metadata addition, this function takes in a metadata string,
+ *  validates the string, and adds the metadata to the new image structure if
+ *  validation passes. If the string is invalid, a skeleton JSON string is
+ *  added to the image instead, containing the CamTIFF version and if the
+ *  directory applies to strict rules.
+ *
+ *  Note that this function can create anomalous results if the image is
+ *  deallocated before a write command happens.
+ *
+ * @param ctiff    The CTIFF to add the directory to.
+ * @param name     A name tag for the metadata to be attached.
+ * @param ext_meta The metadata to be added (JSON string).
+ * @param page     A pointer to the start of the image data.
+ * @return         0 on success, CTIFF error on failure.
+ */
+int CTIFFAddNewPage(CTIFF ctiff, const void *page,
+                    const char* ext_name, const char* ext_meta)
 {
   int retval = 0;
 
@@ -67,7 +102,8 @@ int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
 
   // Not empty CTIFF
   if (ctiff->last_dir != NULL){
-    if (memcmp(&ctiff->last_dir->style, &def_dir->style, sizeof(CTIFF_dir_style))){
+    if (memcmp(&ctiff->last_dir->style,
+               &def_dir->style, sizeof(CTIFF_dir_style))){
       ctiff->num_page_styles++;
     }
   }
@@ -75,7 +111,7 @@ int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
   memcpy(new_dir, ctiff->def_dir, sizeof(struct CTIFF_dir_s));
 
   new_dir->timestamp = __CTIFFGetTime();
-  new_dir->ext_meta.data = __CTIFFCreateValidExtMeta(ctiff->strict, name,
+  new_dir->ext_meta.data = __CTIFFCreateValidExtMeta(ctiff->strict, ext_name,
                                                      ext_meta);
 
   new_dir->data = page;
@@ -86,6 +122,9 @@ int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
 
 
 
+/** Free a extended metadata struct.
+ * @param ext_meta A pointer to the CTIFF_extended_metadata struct.
+ */
 void __CTIFFFreeExtMeta(CTIFF_extended_metadata *ext_meta)
 {
   if (ext_meta->data == NULL) return;
@@ -93,6 +132,9 @@ void __CTIFFFreeExtMeta(CTIFF_extended_metadata *ext_meta)
   FREE(ext_meta->data);
 }
 
+/** Free a directory struct.
+ * @param dir A pointer to the CTIFF_dir struct to be deallocated
+ */
 void __CTIFFFreeDir(CTIFF_dir *dir)
 {
   if  (dir == NULL) return;
@@ -105,7 +147,10 @@ void __CTIFFFreeDir(CTIFF_dir *dir)
   }
 }
 
-int __CTIFFFreeFile(CTIFF ctiff)
+/** Free a CTIFF struct.
+ * @param ctiff The CTIFF to deallocate.
+ */
+int __CTIFFFree(CTIFF ctiff)
 {
   CTIFF_dir *tmp_dir;
 

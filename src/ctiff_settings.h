@@ -1,4 +1,5 @@
-/* ctiff_settings.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_settings.h
+ * @description Set parameters for a CamTIFF file.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
  *
@@ -35,12 +36,11 @@ int CTIFFSetBasicMeta(CTIFF ctiff,
                       const char *software,
                       const char *image_desc);
 
-int CTIFFSetPageStyle(CTIFF ctiff,
+int CTIFFSetStyle(CTIFF ctiff,
                       unsigned  int width,
                       unsigned  int height,
                       unsigned  int pixel_type,
-                               bool in_color,
-                      unsigned  int x_resolution,
-                      unsigned  int y_resolution);
+                               bool in_color);
 
+int CTIFFSetRes(CTIFF ctiff, unsigned int x_res, unsigned int y_res);
 #endif /* end of include guard: CTIFF_SETTINGS_H */

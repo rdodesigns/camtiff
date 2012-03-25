@@ -1,9 +1,9 @@
 LIBRARY libctiff
 EXPORTS
-	CTIFFNewFile      @1
-	CTIFFCloseFile    @2
-	CTIFFWriteFile    @3
-	CTIFFAddNewPage   @4
-	CTIFFSetPageStyle @5
-	CTIFFSetBasicMeta @6
-  CTIFFWriteEvery   @7
+	CTIFFNew          @ 1
+	CTIFFClose        @ 2
+	CTIFFWrite        @ 3
+	CTIFFAddNewPage   @ 4
+	CTIFFSetStyle     @ 5
+	CTIFFSetBasicMeta @ 6
+  CTIFFWriteEvery   @ 7

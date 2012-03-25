@@ -22,6 +22,10 @@
 #include "ctiff_util.h"
 
 
+/** Get the current time of the local machine in UTC.
+ *
+ *  @return New malloced time string on success, NULL on failure.
+ */
 const char* __CTIFFGetTime()
 {
   time_t local_current_time;
@@ -34,7 +38,7 @@ const char* __CTIFFGetTime()
   time(&local_current_time);
 
   retval = gmtime_s(&gmt_current_time, &local_current_time);
-  /*if (retval) {printf("Could not get UTC.\n"); return retval;}*/
+  if (retval) return NULL;
 
   strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", &gmt_current_time);
 #else
@@ -42,7 +46,8 @@ const char* __CTIFFGetTime()
 
   // Get time of slice
   time(&local_current_time);
-  gmt_current_time = gmtime(&local_current_time);
+  retval = gmt_current_time = gmtime(&local_current_time);
+  if (retval) return NULL;
   strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", gmt_current_time);
 #endif
 

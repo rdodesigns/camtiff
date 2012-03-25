@@ -1,4 +1,5 @@
-/* ctiff_io.h - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_io.h
+ * @description Create, open, and close CTIFF files.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
  *
@@ -22,7 +23,7 @@
 
 #include "ctiff_types.h"
 
-CTIFF CTIFFNewFile(const char* output_file);
-int CTIFFCloseFile(CTIFF ctiff);
+CTIFF CTIFFNew(const char* output_file);
+int CTIFFClose(CTIFF ctiff);
 
 #endif /* end of include guard: CTIFF_IO_H */

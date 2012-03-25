@@ -1,4 +1,5 @@
-/* ctiff_win32.c - A TIFF image writing library for spectroscopic data.
+/* @file ctiff_win32.c
+ * @description Windows specific corrections.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
  * Date: 18/03/12 16:55:19
