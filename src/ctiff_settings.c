@@ -140,9 +140,7 @@ int CTIFFSetStyle(CTIFF ctiff,
                       unsigned  int width,
                       unsigned  int height,
                       unsigned  int pixel_type,
-                               bool in_color,
-                      unsigned  int x_res,
-                      unsigned  int y_res)
+                               bool in_color)
 {
   CTIFF_dir_style* def_style;
   unsigned char pixel_kind = (pixel_type >> 4) & 0x0F;
@@ -170,18 +168,20 @@ int CTIFFSetStyle(CTIFF ctiff,
  *  reader. It does not affect the directories image or the display of the
  *  image.
  *
+ * @param ctiff      The CamTIFF file to add basic metadata to.
  * @param x_res      The x (width) res of the image(s).
  * @param y_res      The y (height) res of the image(s).
  * @return           0 on success, CTIFF error on failure.
  */
-int CTIFFSetRes(unsigned int x_res, unsigned int y_res)
+int CTIFFSetRes(CTIFF ctiff, unsigned int x_res, unsigned int y_res)
 {
   // TODO: Move the x_res, y_res outside of style struct?
   CTIFF_dir_style* def_style;
 
   if (ctiff == NULL) return ECTIFFNULL;
-  def_style = &ctiff->def_style->style;
+  def_style = &ctiff->def_dir->style;
 
   def_style->x_res    = x_res;
   def_style->y_res    = y_res;
+  return CTIFFSUCCESS;
 }

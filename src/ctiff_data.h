@@ -23,8 +23,8 @@
 
 #include "ctiff_types.h"
 
-int CTIFFAddNewPage(CTIFF ctiff, const char* name, const char* ext_meta,
-                 const void* page);
+int CTIFFAddNewPage(CTIFF ctiff, const void *page,
+                    const char* name, const char* ext_meta);
 int __CTIFFFree(CTIFF ctiff);
 
 

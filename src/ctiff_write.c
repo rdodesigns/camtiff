@@ -110,7 +110,7 @@ int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
   // These values do not impact image reading
   RETNONZERO(TIFFSetField(tiff, TIFFTAG_XRESOLUTION, style->x_res));
   RETNONZERO(TIFFSetField(tiff, TIFFTAG_YRESOLUTION, style->y_res));
-  RETNONZERO(TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESOLTIONUNIT_NONE));
+  RETNONZERO(TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_NONE));
 
   return retval;
 }

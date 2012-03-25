@@ -32,6 +32,7 @@ const char* __CTIFFGetTime()
   char  *time_str = (char*) malloc(20*sizeof(char));
 
 #ifdef __WIN32
+  int retval;
   struct tm gmt_current_time;
 
   // Get time of slice
@@ -46,8 +47,7 @@ const char* __CTIFFGetTime()
 
   // Get time of slice
   time(&local_current_time);
-  retval = gmt_current_time = gmtime(&local_current_time);
-  if (retval) return NULL;
+  gmt_current_time = gmtime(&local_current_time);
   strftime(time_str, 20, "%Y:%m:%d %H:%M:%S", gmt_current_time);
 #endif
 

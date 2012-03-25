@@ -54,9 +54,10 @@ int main(void)
 
 
 
-  CTIFF ctiff = CTIFFNewFile(output_path);
+  CTIFF ctiff = CTIFFNew(output_path);
   CTIFFWriteEvery(ctiff, 1);
-  CTIFFSetPageStyle(ctiff, width, height, pixel_type, false, 72, 72);
+  CTIFFSetStyle(ctiff, width, height, pixel_type, false);
+  CTIFFSetRes(ctiff, 72, 72);
 
   CTIFFSetBasicMeta(ctiff,
                     artist, copyright, make, model, software, image_desc);
@@ -64,15 +65,15 @@ int main(void)
   for (k = 0; k < pages; k++){
     buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
-    if ((retval = CTIFFAddNewPage(ctiff, software, metadata[k], buf)) != 0){
+    if ((retval = CTIFFAddNewPage(ctiff, buf, software, metadata[k])) != 0){
       printf("Could not add image\n");
-      CTIFFCloseFile(ctiff);
+      CTIFFClose(ctiff);
       return retval;
     }
   }
 
-  retval = CTIFFWriteFile(ctiff);
-  CTIFFCloseFile(ctiff);
+  retval = CTIFFWrite(ctiff);
+  CTIFFClose(ctiff);
   DEBUGP("Wrote TIFF.")
 
   destroyBuffer(buffer);
