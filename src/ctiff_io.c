@@ -106,7 +106,7 @@ CTIFF CTIFFNew(const char* output_file)
  * @see CTIFFWrite
  *
  * @param ctiff The CTIFF file to close.
- * @return 0 on success, CTIFF error otherwise.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int CTIFFClose(CTIFF ctiff)
 {
@@ -115,6 +115,6 @@ int CTIFFClose(CTIFF ctiff)
   TIFFClose(ctiff->tiff);
   __CTIFFFree(ctiff);
 
-  return 0;
+  return CTIFFSUCCESS;
 }
 

@@ -423,6 +423,7 @@ JSON_checker_char(JSON_checker jc, int next_char)
  *  text was accepted.
  *
  * @param jc The JSON_checker automaton structure.
+ * @return   True is the JSON is valid, false if not.
  */
 int
 JSON_checker_done(JSON_checker jc)
@@ -432,6 +433,13 @@ JSON_checker_done(JSON_checker jc)
     return result;
 }
 
+/** Validate metadata.
+ *
+ *  This function validates a metadata string.
+ *
+ * @param json The metadata string.
+ * @return     True if valid string, false if invalid.
+ */
 int __CTIFFIsValidJSON(const char* json)
 {
   int retval = 1;

@@ -81,7 +81,7 @@ void CTIFFSetStrict(CTIFF ctiff, bool strict)
  * @param software   The software string, or NULL to not include a software.
  * @param image_desc The image description string, or NULL to not include an
  *                     image description.
- * @return           0 on success, CTIFF error on failure.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int CTIFFSetBasicMeta(CTIFF ctiff,
                       const char *artist,
@@ -104,7 +104,7 @@ int CTIFFSetBasicMeta(CTIFF ctiff,
   basic_meta->software   = software;
   basic_meta->image_desc = image_desc;
 
-  return 0;
+  return CTIFFSUCCESS;
 }
 
 /** Set the page style for subsequent directory additions to a CamTIFF file.
@@ -134,7 +134,7 @@ int CTIFFSetBasicMeta(CTIFF ctiff,
  * @param height     The height of the subsequent image(s).
  * @param pixel_type The type of pixel that makes up the image(s).
  * @param in_color   Is the image in color?
- * @return           0 on success, CTIFF error on failure.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int CTIFFSetStyle(CTIFF ctiff,
                       unsigned  int width,
@@ -159,7 +159,7 @@ int CTIFFSetStyle(CTIFF ctiff,
   }
   def_style->pixel_data_type = (char) (pixel_type >> 4) & 0x0F;
 
-  return 0;
+  return CTIFFSUCCESS;
 }
 
 /** Set the x and y resolution to subsequent directiory additions to a CamTIFF.
@@ -171,7 +171,7 @@ int CTIFFSetStyle(CTIFF ctiff,
  * @param ctiff      The CamTIFF file to add basic metadata to.
  * @param x_res      The x (width) res of the image(s).
  * @param y_res      The y (height) res of the image(s).
- * @return           0 on success, CTIFF error on failure.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int CTIFFSetRes(CTIFF ctiff, unsigned int x_res, unsigned int y_res)
 {

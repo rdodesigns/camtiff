@@ -34,7 +34,8 @@
  */
 void __CTIFFWriteExtMeta(CTIFF_extended_metadata *ext_meta, TIFF *tiff)
 {
-  TIFFSetField(tiff, TIFFTAG_XMLPACKET, strlen(ext_meta->data), ext_meta->data);
+  TIFFSetField(tiff, TIFFTAG_XMLPACKET, strlen(ext_meta->data),
+                                        ext_meta->data);
 }
 
 /** Write the basic metadata to the TIFF File.
@@ -76,11 +77,11 @@ void __CTIFFWriteBasicMeta(CTIFF_basic_metadata *basic_meta, TIFF *tiff)
  *
  * @param style The style to write to the CamTIFF file.
  * @param tiff  The CamTIFF file to add the metadata to.
- * @return      0 on success, non-zero CamTIFF error on failure.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
 {
-  int retval = 0;
+  int retval = CTIFFSUCCESS;
   // Required for image viewing.
   RETNONZERO(TIFFSetField(tiff, TIFFTAG_IMAGEWIDTH, style->width));
   RETNONZERO(TIFFSetField(tiff, TIFFTAG_IMAGELENGTH, style->height));
@@ -119,11 +120,11 @@ int __CTIFFWriteStyle(CTIFF_dir_style *style, TIFF *tiff)
  *
  * @param dir   The directory to write to the CamTIFF file.
  * @param tiff  The CamTIFF file to add the metadata to.
- * @return      CTIFFSUCCESS on success, non-zero CamTIFF error on failure.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
 {
-  int retval = 0;
+  int retval = CTIFFSUCCESS;
   unsigned int i;
   unsigned int height, width, bps;
   const void *strip_buffer, *image;

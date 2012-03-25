@@ -39,7 +39,7 @@
  *
  * @param ctiff The CTIFF to add the directory to.
  * @param dir   The directory.
- * @return      CTIFF error if attachment fails, 0 if success.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
 {
@@ -62,7 +62,7 @@ int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
     CTIFFWrite(ctiff);
   }
 
-  return 0;
+  return CTIFFSUCCESS;
 }
 
 /** Create a new TIFF directory with metadata and attach it to a CTIFF.
@@ -85,12 +85,12 @@ int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
  * @param name     A name tag for the metadata to be attached.
  * @param ext_meta The metadata to be added (JSON string).
  * @param page     A pointer to the start of the image data.
- * @return         0 on success, CTIFF error on failure.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int CTIFFAddNewPage(CTIFF ctiff, const void *page,
                     const char* ext_name, const char* ext_meta)
 {
-  int retval = 0;
+  int retval = CTIFFSUCCESS;
 
   CTIFF_dir *new_dir;
   CTIFF_dir *def_dir;
@@ -149,6 +149,7 @@ void __CTIFFFreeDir(CTIFF_dir *dir)
 
 /** Free a CTIFF struct.
  * @param ctiff The CTIFF to deallocate.
+ * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
 int __CTIFFFree(CTIFF ctiff)
 {
@@ -166,5 +167,5 @@ int __CTIFFFree(CTIFF ctiff)
   FREE(ctiff);
   tmp_dir = NULL;
 
-  return 0;
+  return CTIFFSUCCESS;
 }
