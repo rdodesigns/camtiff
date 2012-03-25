@@ -45,7 +45,7 @@ void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
  *  string containing only the CamTIFF version and strict mode is created. On
  *  false, this removes this metadata validity check.
  *
- *  As such, one should almost always use strict mode, as it guarentees that
+ *  As such, one should almost always use strict mode, as it guarantees that
  *  the attached metadata can be parsed. However, if the program that uses
  *  CamTIFF is unsure as to whether it can write a valid metadata string, then
  *  using the non-strict mode will allow all information to be saved, and
@@ -162,7 +162,7 @@ int CTIFFSetStyle(CTIFF ctiff,
   return CTIFFSUCCESS;
 }
 
-/** Set the x and y resolution to subsequent directiory additions to a CamTIFF.
+/** Set the x and y resolution to subsequent directory additions to a CamTIFF.
  *
  *  The x and y res parameters are added only for metadata benefit of the TIFF
  *  reader. It does not affect the directories image or the display of the
