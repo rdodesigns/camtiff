@@ -120,6 +120,12 @@ typedef struct CTIFF_dir_s {
                       int  refs;
 } CTIFF_dir;
 
+// TODO: Implement node form of directory storage by 0.1.0a4
+typedef struct node_s {
+  CTIFF_dir *dir;
+  CTIFF_dir *next_dir;
+} node;
+
 /** Structure for holding a set of CamTIFF directories.
  *
  *  This structure is usually created dynamically, and should be freed with
