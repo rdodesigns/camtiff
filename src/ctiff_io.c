@@ -1,4 +1,5 @@
-/* @file ctiff_io.c
+/**
+ * @file ctiff_io.c
  * @description Create, open, and close CTIFF files.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58

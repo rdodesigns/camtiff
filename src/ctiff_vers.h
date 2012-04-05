@@ -1,4 +1,5 @@
-/* @file ctiff_vers.h
+/**
+ * @file ctiff_vers.h
  * @description Defines the version numbers for CamTIFF.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>

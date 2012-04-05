@@ -1,4 +1,5 @@
-/* @file ctiff_write.h
+/**
+ * @file ctiff_write.h
  * @description Writing CTIFF files to disk.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58

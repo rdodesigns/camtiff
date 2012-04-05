@@ -1,4 +1,5 @@
-/* @file ctiff_settings.c
+/**
+ * @file ctiff_settings.c
  * @description Set parameters for a CamTIFF file.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58

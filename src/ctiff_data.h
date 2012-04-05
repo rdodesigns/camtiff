@@ -1,4 +1,5 @@
-/* @file ctiff_data.h
+/**
+ * @file ctiff_data.h
  * @description Operations on the data structures.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10

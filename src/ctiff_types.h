@@ -1,4 +1,5 @@
-/* @file ctiff_types.h
+/**
+ * @file ctiff_types.h
  * @description Define the data structures in CamTIFF.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10

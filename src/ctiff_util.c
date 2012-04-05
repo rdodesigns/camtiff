@@ -1,4 +1,5 @@
-/* ctiff_util.c - A TIFF image writing library for spectroscopic data.
+/**
+ * ctiff_util.c - A TIFF image writing library for spectroscopic data.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
  *
