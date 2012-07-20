@@ -117,15 +117,23 @@ typedef struct CTIFF_dir_s {
   CTIFF_extended_metadata  ext_meta;
                const char *timestamp;
                const void *data;
-       struct CTIFF_dir_s *next_dir;
+                      int  write_count;
                       int  refs;
 } CTIFF_dir;
 
-// TODO: Implement node form of directory storage by 0.1.0a4
-typedef struct node_s {
-  CTIFF_dir *dir;
-  CTIFF_dir *next_dir;
-} node;
+/** Structure for linking CTIFF_dirs together
+ *
+ * This is implemented outside of CTIFF_dir to separate the data from its
+ * linking structure. This allows for one to easily build other data
+ * structures (like doubly linked lists) in the future.
+ *
+ * @see __CTIFFFreeNode
+ */
+typedef struct CTIFF_node_s {
+            CTIFF_dir *dir;
+  struct CTIFF_node_s *next_node;
+                  int  refs;
+} * CTIFF_node;
 
 /** Structure for holding a set of CamTIFF directories.
  *
@@ -143,9 +151,10 @@ typedef struct CTIFF_s {
   unsigned int  num_unwritten;
 
   CTIFF_dir    *def_dir;
-  CTIFF_dir    *first_dir;
-  CTIFF_dir    *last_dir;
-  CTIFF_dir    *write_ptr;
+  CTIFF_node    first_node;
+  CTIFF_node    last_node;
+  CTIFF_node    write_ptr;
+
 } * CTIFF;
 
 #endif /* end of include guard: CTIFF_TYPES_H */
