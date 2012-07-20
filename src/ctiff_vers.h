@@ -1,4 +1,5 @@
-/* @file ctiff_vers.h
+/**
+ * @file ctiff_vers.h
  * @description Defines the version numbers for CamTIFF.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>
@@ -22,4 +23,4 @@
 #define CTIFF_MINOR_VERSION 1
 #define CTIFF_MAINT_VERSION 0
 
-#define CTIFF_TESTING_VERSION "a3"
+#define CTIFF_TESTING_VERSION "a4"

@@ -1,4 +1,5 @@
-/* @file ctiff_write.c
+/**
+ * @file ctiff_write.c
  * @description Writing CTIFF files to disk.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
@@ -153,12 +154,11 @@ int __CTIFFWriteDir(CTIFF_dir *dir, TIFF *tiff)
     }
   }
 
-
   // 1 on success, 0 on error
-  if (TIFFWriteDirectory(tiff) != 1){
-    return ECTIFFWRITEDIR;
-  }
+  if (TIFFWriteDirectory(tiff) != 1) return ECTIFFWRITEDIR;
 
+  // The write has succeeded.
+  dir->write_count++;
   return retval;
 }
 
@@ -186,28 +186,27 @@ int CTIFFWrite(CTIFF ctiff)
 {
   int retval = 0;
   unsigned int *num_unwritten;
-  CTIFF_dir *dir, *prev_dir;
+  CTIFF_node node, prev_node;
 
   if (ctiff == NULL) return ECTIFFNULL;
 
-  prev_dir = ctiff->write_ptr;
+  prev_node = ctiff->write_ptr;
   if (ctiff->write_ptr == NULL){
-    dir = ctiff->first_dir;
+    node = ctiff->first_node;
   } else {
-    dir = ctiff->write_ptr->next_dir;
+    node = ctiff->write_ptr->next_node;
   }
 
   num_unwritten = &ctiff->num_unwritten;
 
-  while (dir != NULL && *num_unwritten > 0) {
-    if ((retval = __CTIFFWriteDir(dir, ctiff->tiff)) != 0)
-      return retval;
+  while (node != NULL && *num_unwritten > 0) {
+    if ((retval = __CTIFFWriteDir(node->dir, ctiff->tiff)) != 0) return retval;
 
-    prev_dir = dir;
-    dir = dir->next_dir;
+    prev_node = node;
+    node = node->next_node;
     (*num_unwritten)--;
   }
 
-  ctiff->write_ptr = prev_dir;
+  ctiff->write_ptr = prev_node;
   return 0;
 }

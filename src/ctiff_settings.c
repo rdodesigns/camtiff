@@ -1,4 +1,5 @@
-/* @file ctiff_settings.c
+/**
+ * @file ctiff_settings.c
  * @description Set parameters for a CamTIFF file.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
@@ -175,7 +176,6 @@ int CTIFFSetStyle(CTIFF ctiff,
  */
 int CTIFFSetRes(CTIFF ctiff, unsigned int x_res, unsigned int y_res)
 {
-  // TODO: Move the x_res, y_res outside of style struct?
   CTIFF_dir_style* def_style;
 
   if (ctiff == NULL) return ECTIFFNULL;

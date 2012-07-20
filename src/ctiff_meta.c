@@ -1,4 +1,5 @@
-/* @file ctiff_meta.c
+/**
+ * @file ctiff_meta.c
  * @description Functions for creating/validating metadata.
  *
  * Created using a pushdown automaton parser.

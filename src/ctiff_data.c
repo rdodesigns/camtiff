@@ -1,4 +1,5 @@
-/* @file ctiff_data.c
+/**
+ * @file ctiff_data.c
  * @description Operations on the data structures.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
@@ -29,6 +30,20 @@
 
 #include "ctiff_data.h"
 
+CTIFF_node __CTIFFNewNode(CTIFF_dir *dir)
+{
+  CTIFF_node new_node = (CTIFF_node) malloc(sizeof(struct CTIFF_node_s));
+
+  new_node->dir       = dir;
+  new_node->next_node = NULL;
+  new_node->refs      = 0;
+
+  dir->refs++;
+
+  return new_node;
+}
+
+
 /** Add directory to CTIFF image stack.
  *
  *  This is currently implemented as a linked list. Additionally, the write
@@ -41,20 +56,21 @@
  * @param dir   The directory.
  * @return      CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
-int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
+int __CTIFFAddNode(CTIFF ctiff, CTIFF_dir *dir)
 {
   if (ctiff == NULL) return ECTIFFNULL;
   if (dir == NULL) return ECTIFFNULLDIR;
 
+  CTIFF_node new_node = __CTIFFNewNode(dir);
 
-  if (ctiff->first_dir == NULL){
-    ctiff->first_dir = dir;
+  if (ctiff->first_node == NULL){
+    ctiff->first_node = new_node;
   } else {
-    ctiff->last_dir->next_dir = dir;
+    ctiff->last_node->next_node = new_node;
   }
 
-  ctiff->last_dir = dir;
-  dir->refs++;
+  ctiff->last_node = new_node;
+  new_node->refs++;
 
   ctiff->num_unwritten++;
 
@@ -64,6 +80,7 @@ int __CTIFFAddPage(CTIFF ctiff, CTIFF_dir *dir)
 
   return CTIFFSUCCESS;
 }
+
 
 /** Create a new TIFF directory with metadata and attach it to a CTIFF.
  *
@@ -101,8 +118,8 @@ int CTIFFAddNewPage(CTIFF ctiff, const void *page,
   def_dir  = ctiff->def_dir;
 
   // Not empty CTIFF
-  if (ctiff->last_dir != NULL){
-    if (memcmp(&ctiff->last_dir->style,
+  if (ctiff->last_node != NULL){
+    if (memcmp(&ctiff->last_node->dir->style,
                &def_dir->style, sizeof(CTIFF_dir_style))){
       ctiff->num_page_styles++;
     }
@@ -116,11 +133,13 @@ int CTIFFAddNewPage(CTIFF ctiff, const void *page,
 
   new_dir->data = page;
 
-  retval = __CTIFFAddPage(ctiff, new_dir);
+  retval = __CTIFFAddNode(ctiff, new_dir);
   return retval;
 }
 
 
+// No __CTIFFFreeBasicMeta exists because the character arrays for those
+// structs are provided externally, and hence should be freed by the caller.
 
 /** Free a extended metadata struct.
  * @param ext_meta A pointer to the CTIFF_extended_metadata struct.
@@ -137,13 +156,32 @@ void __CTIFFFreeExtMeta(CTIFF_extended_metadata *ext_meta)
  */
 void __CTIFFFreeDir(CTIFF_dir *dir)
 {
-  if  (dir == NULL) return;
+  if (dir == NULL) return;
 
   if (dir->refs > 1){
     dir->refs--;
   } else {
     __CTIFFFreeExtMeta(&dir->ext_meta);
     FREE(dir->timestamp);
+    FREE(dir);
+  }
+}
+
+/** Free a node struct.
+ * @param node A pointer to the CTIFF_node struct to be deallocated
+ */
+void __CTIFFFreeNode(CTIFF_node node)
+{
+  CTIFF_dir *dir;
+  if (node == NULL) return;
+
+  dir = node->dir;
+
+  if (node->refs > 1){
+    node->refs--;
+  } else {
+    __CTIFFFreeDir(dir);
+    FREE(node);
   }
 }
 
@@ -153,19 +191,18 @@ void __CTIFFFreeDir(CTIFF_dir *dir)
  */
 int __CTIFFFree(CTIFF ctiff)
 {
-  CTIFF_dir *tmp_dir;
+  CTIFF_node tmp_node;
 
   if (ctiff == NULL) return ECTIFFNULL;
 
-  while (ctiff->first_dir != NULL){
-    tmp_dir = ctiff->first_dir;
-    ctiff->first_dir = tmp_dir->next_dir;
-    __CTIFFFreeDir(tmp_dir);
+  while (ctiff->first_node != NULL){
+    tmp_node = ctiff->first_node;
+    ctiff->first_node = tmp_node->next_node;
+    __CTIFFFreeNode(tmp_node);
   }
 
   FREE(ctiff->def_dir);
   FREE(ctiff);
-  tmp_dir = NULL;
 
   return CTIFFSUCCESS;
 }

@@ -1,4 +1,5 @@
-/* @file ctiff_win32.c
+/**
+ * @file ctiff_win32.c
  * @description Windows specific corrections.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>

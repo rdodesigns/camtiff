@@ -1,4 +1,5 @@
-/* @file ctiff_meta.h
+/**
+ * @file ctiff_meta.h
  * @description Functions for creating/validating metadata.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk>

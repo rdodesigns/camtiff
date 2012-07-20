@@ -1,4 +1,5 @@
-/* @file ctiff.h
+/**
+ * @file ctiff.h
  * @description A TIFF + JSON image writing library.
  *
  * This is the opaque header that should be included in statically compiled

@@ -1,4 +1,5 @@
-/* @file ctiff_io.c
+/**
+ * @file ctiff_io.c
  * @description Create, open, and close CTIFF files.
  *
  * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
@@ -52,7 +53,9 @@ CTIFF CTIFFNew(const char* output_file)
   CTIFF_basic_metadata     *b_meta = &def_dir->basic_meta;
   CTIFF_extended_metadata  *e_meta = &def_dir->ext_meta;
 
-  // TODO: If output_file == NULL, write to tmp location.
+  // TODO: If output_file == NULL, write to tmp location?
+  if (output_file == NULL) return NULL;
+
   if ((ctiff->tiff = TIFFOpen(output_file, "w")) == NULL){
     FREE(ctiff);
     return NULL;
@@ -68,15 +71,15 @@ CTIFF CTIFFNew(const char* output_file)
   ctiff->write_every_num = 1;
   ctiff->num_unwritten   = 0;
 
-  ctiff->first_dir = NULL;
-  ctiff->last_dir  = NULL;
-  ctiff->write_ptr = NULL;
+  ctiff->first_node = NULL;
+  ctiff->last_node  = NULL;
+  ctiff->write_ptr  = NULL;
 
   // Set def dir def data pointers
-  def_dir->timestamp = NULL;
-  def_dir->data      = NULL;
-  def_dir->next_dir  = NULL;
-  def_dir->refs      = 0;
+  def_dir->timestamp   = NULL;
+  def_dir->data        = NULL;
+  def_dir->refs        = 0;
+  def_dir->write_count = 0;
 
   // Set basic def dir style.
   style->black_is_min = true;
@@ -84,11 +87,11 @@ CTIFF CTIFFNew(const char* output_file)
   style->y_res        = 72;
 
   // Set basic metadata
-  b_meta->artist = NULL;
-  b_meta->copyright = NULL;
-  b_meta->make = NULL;
-  b_meta->model = NULL;
-  b_meta->software = NULL;
+  b_meta->artist     = NULL;
+  b_meta->copyright  = NULL;
+  b_meta->make       = NULL;
+  b_meta->model      = NULL;
+  b_meta->software   = NULL;
   b_meta->image_desc = NULL;
 
   // Set extended metadata
@@ -117,4 +120,3 @@ int CTIFFClose(CTIFF ctiff)
 
   return CTIFFSUCCESS;
 }
-
