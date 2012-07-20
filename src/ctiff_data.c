@@ -58,10 +58,12 @@ CTIFF_node __CTIFFNewNode(CTIFF_dir *dir)
  */
 int __CTIFFAddNode(CTIFF ctiff, CTIFF_dir *dir)
 {
+  CTIFF_node new_node;
+ 
   if (ctiff == NULL) return ECTIFFNULL;
   if (dir == NULL) return ECTIFFNULLDIR;
 
-  CTIFF_node new_node = __CTIFFNewNode(dir);
+  new_node = __CTIFFNewNode(dir);
 
   if (ctiff->first_node == NULL){
     ctiff->first_node = new_node;
