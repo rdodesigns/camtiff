@@ -7,3 +7,4 @@ EXPORTS
 	CTIFFSetStyle     @ 5
 	CTIFFSetBasicMeta @ 6
   CTIFFWriteEvery   @ 7
+  CTIFFSetStrict    @ 8

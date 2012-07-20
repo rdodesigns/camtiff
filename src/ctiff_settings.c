@@ -57,6 +57,8 @@ void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
  */
 void CTIFFSetStrict(CTIFF ctiff, bool strict)
 {
+  if (ctiff == NULL) return;
+
   ctiff->strict = strict;
 }
 

@@ -27,7 +27,7 @@
 #include "ctiff_types.h"
 
 int __CTIFFIsValidJSON(const char* json);
-const char* __CTIFFTarValidExtMeta(const char* json);
+const char* __CTIFFTarValidExtMeta(const char* json, bool strict);
 const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
                                       const char* ext_meta);
 

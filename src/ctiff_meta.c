@@ -464,6 +464,21 @@ int __CTIFFIsValidJSON(const char* json)
   return retval;
 }
 
+void __CTIFFTarValidExtMetaError(char** ret, const char* json, bool strict)
+{
+  char* buf;
+
+  if (ret == NULL) return;
+
+  if (strict){
+    FREE(*ret);
+  } else {
+    buf = *ret + strlen(json);
+    memcpy(*ret, json, sizeof(char)*strlen(json));
+    *buf = '\0';
+  }
+}
+
 /** Validate metadata and return a compressed version.
  *
  *  This function removes the white space in between the keys and objects in
@@ -472,7 +487,7 @@ int __CTIFFIsValidJSON(const char* json)
  * @param json The metadata string.
  * @return     Compressed JSON string.
  */
-const char* __CTIFFTarValidExtMeta(const char* json)
+const char* __CTIFFTarValidExtMeta(const char* json, bool strict)
 {
   char* ret = (char*) malloc(sizeof(char)*(strlen(json)+1));
   char* buf = ret;
@@ -486,16 +501,16 @@ const char* __CTIFFTarValidExtMeta(const char* json)
       break;
     }
     if (!(tmp_char = JSON_checker_char(jc, next_char))) {
-      FREE(ret);
-      return NULL;
+      __CTIFFTarValidExtMetaError(&ret,json,strict);
+      return ret;
     }
     if (tmp_char != -1) *buf++ = tmp_char;
 
   } while (*(pt++) != '\0');
 
   if (!JSON_checker_done(jc)) {
-    FREE(ret);
-    return NULL;
+    __CTIFFTarValidExtMetaError(&ret,json,strict);
+    return ret;
   }
 
   *buf = '\0';
@@ -523,7 +538,7 @@ const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
 
   if (name != NULL && strlen(name) != 0 &&
       ext_meta != NULL && strlen(ext_meta) != 0 &&
-      (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta)) != NULL ){
+      (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta, strict)) != NULL ){
     sprintf(buf_ext, key_value, name, tar_ext_meta);
     FREE(tar_ext_meta);
   } else {

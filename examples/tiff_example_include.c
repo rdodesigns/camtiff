@@ -46,7 +46,7 @@ int main(void)
                            "{\"numeric_data\": 1337 }",
                            "{\"boolean data\": true}",
                            "{\"array data\": [ [ 1, 2, 3], [4, 5, 6], [7, 8, 9]]}",
-                           "{\"bad json\" 42}"};
+                           "{ \"bad json\" 42}"};
 
   TRYFUNC(calculateImageArrays(width, height, pages, pixel_bit_depth, &buffer),
           "Could not calclate buffer.")
@@ -57,6 +57,7 @@ int main(void)
   CTIFF ctiff = CTIFFNew(output_path);
   CTIFFWriteEvery(ctiff, 1);
   CTIFFSetStyle(ctiff, width, height, pixel_type, false);
+  CTIFFSetStrict(ctiff,true);
   CTIFFSetRes(ctiff, 72, 72);
 
   CTIFFSetBasicMeta(ctiff,
