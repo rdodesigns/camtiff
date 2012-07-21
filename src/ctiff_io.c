@@ -66,6 +66,7 @@ CTIFF CTIFFNew(const char* output_file)
   ctiff->num_dirs        = 0;
   ctiff->num_page_styles = 1;
   ctiff->strict          = true;
+  ctiff->strict          = false;
 
   // Safer to write as soon as possible in case the image data disappears.
   ctiff->write_every_num = 1;

@@ -27,7 +27,7 @@
 void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
 
 
-void CTIFFSetStrict(CTIFF ctiff, bool strict);
+int CTIFFSetStrict(CTIFF ctiff, bool strict);
 
 int CTIFFSetBasicMeta(CTIFF ctiff,
                       const char *artist,

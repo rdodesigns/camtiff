@@ -71,6 +71,13 @@ int main(void)
       CTIFFClose(ctiff);
       return retval;
     }
+
+    // This will return an error because at least one of the pages has already
+    // been written to disk.
+    /*
+     * if (CTIFFSetStrict(ctiff,false) != 0) {
+     *   printf("Could not change the strictness of the CTIFF.\n");
+     * } */
   }
 
   retval = CTIFFWrite(ctiff);

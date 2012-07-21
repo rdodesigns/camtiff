@@ -54,12 +54,17 @@ void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
  *
  * @param ctiff  The CamTIFF file to set the parameter for.
  * @param strict Whether to be in strict mode or not.
+ *
+ * @return       CTIFFSUCCESS (0) on success, non-zero CamTIFF error on failure.
  */
-void CTIFFSetStrict(CTIFF ctiff, bool strict)
+int CTIFFSetStrict(CTIFF ctiff, bool strict)
 {
-  if (ctiff == NULL) return;
+  if (ctiff == NULL) return ECTIFFNULL;
+
+  if (ctiff->strict_lock == true) return ECTIFFSTRICTLOCK;
 
   ctiff->strict = strict;
+  return CTIFFSUCCESS;
 }
 
 /** Set the basic metadata for next directories in a CamTIFF file.

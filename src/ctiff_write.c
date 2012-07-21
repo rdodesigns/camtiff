@@ -190,6 +190,9 @@ int CTIFFWrite(CTIFF ctiff)
 
   if (ctiff == NULL) return ECTIFFNULL;
 
+  // Now that we have started writing, lock the strict parameter.
+  ctiff->strict_lock = true;
+
   prev_node = ctiff->write_ptr;
   if (ctiff->write_ptr == NULL){
     node = ctiff->first_node;
