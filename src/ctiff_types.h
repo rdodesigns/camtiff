@@ -2,7 +2,7 @@
  * @file ctiff_types.h
  * @description Define the data structures in CamTIFF.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
+ * Created by Ryan Orendorff <ryan@rdodesigns.com> 18/03/12 16:51:10
  *
  * Copyright (GPL V3): This program is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as

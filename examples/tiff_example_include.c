@@ -1,6 +1,6 @@
 /* tiff_example.c - Example of using camtiff
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk>
+ * Created by Ryan Orendorff <ryan@rdodesigns.com>
  * Date: 28/10/11 21:00:27
  *
  * Copyright GPL V3

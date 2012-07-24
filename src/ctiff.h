@@ -5,7 +5,7 @@
  * This is the opaque header that should be included in statically compiled
  * binaries.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk> 28/10/11 21:00:27
+ * Created by Ryan Orendorff <ryan@rdodesigns.com> 28/10/11 21:00:27
  *
  * Copyright (GPL V3): This program is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as

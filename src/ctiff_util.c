@@ -1,7 +1,7 @@
 /**
  * ctiff_util.c - A TIFF image writing library for spectroscopic data.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
+ * Created by Ryan Orendorff <ryan@rdodesigns.com> 18/03/12 16:52:58
  *
  * Copyright (GPL V3): This program is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as

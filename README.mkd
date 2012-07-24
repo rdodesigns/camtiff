@@ -67,6 +67,24 @@ program, and some errors may be produced if you compile the libtiff tools along
 with the libtiff library files.
 
 
+License
+=======
+
+Copyright (C) 2011 Ryan Orendorff
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <http://www.gnu.org/licenses/>.
+
+
 [libtiff_build]: http://www.remotesensing.org/libtiff/build.html#PC "Building the libTIFF Software Distribution"
 [LabVIEW_DLL]: https://decibel.ni.com/content/docs/DOC-1690 "Using Existing C Code or a DLL in LabVIEW"
 [LabVIEW_DLL_pdf]: https://github.com/LaserAnalytics/camtiff/blob/master/doc/ni_using_dll_labview.pdf

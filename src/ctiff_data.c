@@ -2,7 +2,7 @@
  * @file ctiff_data.c
  * @description Operations on the data structures.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:51:10
+ * Created by Ryan Orendorff <ryan@rdodesigns.com> 18/03/12 16:51:10
  *
  * Copyright (GPL V3): This program is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as
@@ -59,7 +59,7 @@ CTIFF_node __CTIFFNewNode(CTIFF_dir *dir)
 int __CTIFFAddNode(CTIFF ctiff, CTIFF_dir *dir)
 {
   CTIFF_node new_node;
- 
+
   if (ctiff == NULL) return ECTIFFNULL;
   if (dir == NULL) return ECTIFFNULLDIR;
 

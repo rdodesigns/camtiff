@@ -2,7 +2,7 @@
  * @file ctiff_settings.c
  * @description Set parameters for a CamTIFF file.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk> 18/03/12 16:52:58
+ * Created by Ryan Orendorff <ryan@rdodesigns.com> 18/03/12 16:52:58
  *
  * Copyright (GPL V3): This program is free software: you can redistribute it
  * and/or modify it under the terms of the GNU General Public License as

@@ -2,7 +2,7 @@
  * @file ctiff_vers.h
  * @description Defines the version numbers for CamTIFF.
  *
- * Created by Ryan Orendorff <ro265@cam.ac.uk>
+ * Created by Ryan Orendorff <ryan@rdodesigns.com>
  * Date: 18/03/12 16:55:19
  *
  * Copyright (GPL V3):
