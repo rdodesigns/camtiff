@@ -31,11 +31,14 @@
  * @param ctiff     The CamTIFF file to set the parameter for.
  * @param num_pages The number of pages added before writing.
  */
-void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
+int CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages)
 {
-  if (ctiff == NULL) return;
+  if (ctiff == NULL) return ECTIFFNULL;
+
+  if (num_pages == 0) num_pages = 1;
 
   ctiff->write_every_num = num_pages;
+  return CTIFFSUCCESS;
 }
 
 

@@ -5,6 +5,7 @@ EXPORTS
 	CTIFFWrite        @ 3
 	CTIFFAddNewPage   @ 4
 	CTIFFSetStyle     @ 5
-	CTIFFSetBasicMeta @ 6
-  CTIFFWriteEvery   @ 7
-  CTIFFSetStrict    @ 8
+    CTIFFSetRes       @ 6
+	CTIFFSetBasicMeta @ 7
+    CTIFFWriteEvery   @ 8
+    CTIFFSetStrict    @ 9

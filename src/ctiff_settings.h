@@ -24,7 +24,7 @@
 
 #include "ctiff_types.h"
 
-void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
+int CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
 
 
 int CTIFFSetStrict(CTIFF ctiff, bool strict);

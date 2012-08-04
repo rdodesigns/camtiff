@@ -66,7 +66,9 @@ extern int CTIFFSetStyle(CTIFF ctiff,
                       unsigned  int pixel_type,
                                bool in_color);
 extern int CTIFFSetRes(CTIFF ctiff, unsigned int x_res, unsigned int y_res);
-extern int CTIFFAddNewPage(CTIFF, const char*, const char*, const void*);
+extern int CTIFFAddNewPage(CTIFF, const void *page,
+                                  const char *extended_metadata_name,
+                                  const void *extended_metadata);
 extern int CTIFFWrite(CTIFF);
 extern int CTIFFClose(CTIFF);
 extern void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
