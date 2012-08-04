@@ -66,7 +66,7 @@ int main(void)
   for (k = 0; k < pages; k++){
     buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
-    if ((retval = CTIFFAddNewPage(ctiff, buf, software, metadata[k])) != 0){
+    if ((retval = CTIFFAddNewPage(ctiff, buf, "meta", metadata[k])) != 0){
       printf("Could not add image\n");
       CTIFFClose(ctiff);
       return retval;

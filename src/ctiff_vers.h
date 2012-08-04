@@ -19,8 +19,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#define CTIFF_MAJOR_VERSION 0
-#define CTIFF_MINOR_VERSION 1
-#define CTIFF_MAINT_VERSION 1
+#define CTIFF_SPECIFICATION "0"
+#define CTIFFLIB_MAJOR_VERSION 0
+#define CTIFFLIB_MINOR_VERSION 1
+#define CTIFFLIB_MAINT_VERSION 2
 
-#define CTIFF_TESTING_VERSION ""
+
+#define CTIFFLIB_TESTING_VERSION ""

@@ -34,8 +34,6 @@
 #include "ctiff_types.h"
 #include "ctiff_vers.h"
 
-const char *CTIFF_ext_head = "{\"CamTIFF_Version\":\"%d.%d.%d%s\","
-                             "\"strict\":%s%s}";
 
 typedef struct JSON_checker_struct {
     int state;
@@ -489,6 +487,8 @@ void __CTIFFTarValidExtMetaError(char** ret, const char* json, bool strict)
  */
 const char* __CTIFFTarValidExtMeta(const char* json, bool strict)
 {
+  if (!((json != NULL) && (strlen(json) != 0))) return NULL;
+
   char* ret = (char*) malloc(sizeof(char)*(strlen(json)+1));
   char* buf = ret;
   char tmp_char;
@@ -530,29 +530,37 @@ const char* __CTIFFTarValidExtMeta(const char* json, bool strict)
 const char* __CTIFFCreateValidExtMeta(bool strict, const char* name,
                                       const char* ext_meta)
 {
-  char *buf = (char*) malloc(128 + strlen(ext_meta) + strlen(name));
+  char *buf;
+  char *head_buf = (char*) malloc(sizeof(char)*128);
   const char* tar_ext_meta;
-  const char* key_value = ",\"%s\":%s";
-  char  *buf_ext = (char*) malloc(strlen(ext_meta) + strlen(name)+
-	                              strlen(key_value) + 2);
+  const char *CTIFF_ext_head = "\"ctiff\":\"%s\",\"libctiff\":\"%d.%d.%d%s\","
+                               "\"strict\":%s";
 
-  if (name != NULL && strlen(name) != 0 &&
-      ext_meta != NULL && strlen(ext_meta) != 0 &&
-      (tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta, strict)) != NULL ){
-    sprintf(buf_ext, key_value, name, tar_ext_meta);
-    FREE(tar_ext_meta);
+  // Make the head first, can be of variable size
+  sprintf(head_buf, CTIFF_ext_head, CTIFF_SPECIFICATION,
+                                    CTIFFLIB_MAJOR_VERSION,
+                                    CTIFFLIB_MINOR_VERSION,
+                                    CTIFFLIB_MAINT_VERSION,
+                                    CTIFFLIB_TESTING_VERSION,
+                                    strict ? "true" : "false");
+
+  // This must be freed if it is not NULL!
+  tar_ext_meta = __CTIFFTarValidExtMeta(ext_meta, strict);
+
+  // If we have valid metadata and a valid name
+  if ( (tar_ext_meta != NULL) && (name != NULL && strlen(name) != 0) ){
+    buf = (char*) malloc(6 + strlen(head_buf) +
+                             strlen(name) + strlen(tar_ext_meta) + 1);
+    sprintf(buf, "{%s,\"%s\":%s}", head_buf,
+                                   name,
+                                   tar_ext_meta);
   } else {
-    sprintf(buf_ext, "%s", "");
+    buf = (char *) malloc(2 + strlen(head_buf) + 1);
+    sprintf(buf, "{%s}", head_buf);
   }
 
-  sprintf(buf,CTIFF_ext_head,
-              CTIFF_MAJOR_VERSION,
-              CTIFF_MINOR_VERSION,
-              CTIFF_MAINT_VERSION,
-              CTIFF_TESTING_VERSION,
-              strict ? "true" : "false",
-              buf_ext);
 
-  FREE(buf_ext);
+  if (tar_ext_meta != NULL) FREE(tar_ext_meta);
+  FREE(head_buf);
   return buf;
 }
