@@ -71,7 +71,7 @@ extern int CTIFFAddNewPage(CTIFF, const void *page,
                                   const void *extended_metadata);
 extern int CTIFFWrite(CTIFF);
 extern int CTIFFClose(CTIFF);
-extern void CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
+extern int CTIFFWriteEvery(CTIFF ctiff, unsigned int num_pages);
 extern int CTIFFSetStrict(CTIFF ctiff, bool strict);
 
 #endif // end CTIFF header lock
