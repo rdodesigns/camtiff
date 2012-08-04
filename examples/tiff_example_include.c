@@ -27,7 +27,7 @@ int main(void)
 {
   unsigned int width = 1024;
   unsigned int height = 768;
-  unsigned int pages = 5;
+  unsigned int pages = 7;
   unsigned int pixel_type = CTIFF_PIXEL_UINT16;
   int pixel_bit_depth = ((pixel_type >> 4) + 0x01) << 3;
   void* buffer;
@@ -42,11 +42,13 @@ int main(void)
   char *model          = "Camera Model";
   char *software       = "Software";
   char *image_desc     = "Created through include statements.";
+  char *meta_ptr;
   char  metadata[][80] = {"{\"key with spaces\": \r\n\t \"data with spaces 1\"}",
                            "{\"numeric_data\": 1337 }",
                            "{\"boolean data\": true}",
                            "{\"array data\": [ [ 1, 2, 3], [4, 5, 6], [7, 8, 9]]}",
-                           "{ \"bad json\" 42}"};
+                           "{ \"bad json\" 42}",
+                           ""};
 
   TRYFUNC(calculateImageArrays(width, height, pages, pixel_bit_depth, &buffer),
           "Could not calclate buffer.")
@@ -57,8 +59,10 @@ int main(void)
   CTIFF ctiff = CTIFFNew(output_path);
   CTIFFWriteEvery(ctiff, 1);
   CTIFFSetStyle(ctiff, width, height, pixel_type, false);
-  CTIFFSetStrict(ctiff,true);
   CTIFFSetRes(ctiff, 72, 72);
+
+  // Not needed, defaults to strict = true
+  CTIFFSetStrict(ctiff,true);
 
   CTIFFSetBasicMeta(ctiff,
                     artist, copyright, make, model, software, image_desc);
@@ -66,7 +70,9 @@ int main(void)
   for (k = 0; k < pages; k++){
     buf = moveArrayPtr(buffer, k*width*height, pixel_bit_depth);
 
-    if ((retval = CTIFFAddNewPage(ctiff, buf, "meta", metadata[k])) != 0){
+    meta_ptr = (k == 0) ? NULL : metadata[k-1];
+
+    if ((retval = CTIFFAddNewPage(ctiff, buf, "meta", meta_ptr)) != 0){
       printf("Could not add image\n");
       CTIFFClose(ctiff);
       return retval;

@@ -487,13 +487,18 @@ void __CTIFFTarValidExtMetaError(char** ret, const char* json, bool strict)
  */
 const char* __CTIFFTarValidExtMeta(const char* json, bool strict)
 {
+  char *ret;
+  char *buf;
+  char tmp_char;
+  const char *pt;
+  JSON_checker jc;
+
   if (!((json != NULL) && (strlen(json) != 0))) return NULL;
 
-  char* ret = (char*) malloc(sizeof(char)*(strlen(json)+1));
-  char* buf = ret;
-  char tmp_char;
-  const char *pt = json;
-  JSON_checker jc = new_JSON_checker(20);
+  ret = (char*) malloc(sizeof(char)*(strlen(json)+1));
+  buf = ret;
+  pt = json;
+  jc = new_JSON_checker(20);
 
   do {
     char next_char = *pt;
